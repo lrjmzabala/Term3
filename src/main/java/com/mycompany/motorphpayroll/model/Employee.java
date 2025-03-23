@@ -1,6 +1,6 @@
 package com.mycompany.motorphpayroll.model;
 
-public class Employee {
+public class Employee extends Person {
     private final String employeeNumber;
     private final String lastName;
     private final String firstName;
@@ -28,6 +28,7 @@ public class Employee {
                     String supervisor, double basicSalary, double riceSubsidy, 
                     double phoneAllowance, double clothingAllowance, 
                     double grossSemiMonthlyRate, double hourlyRate) {
+        super(firstName, lastName, phoneNumber);
         this.employeeNumber = employeeNumber;
         this.lastName = lastName;
         this.firstName = firstName;

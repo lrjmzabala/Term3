@@ -17,6 +17,9 @@ public class EmployeePanel extends JPanel {
 
     public EmployeePanel() {
         setLayout(new BorderLayout());
+        
+        // ✅ Load employees when GUI starts
+    CSVReaderUtil.loadEmployeesToCache();
 
         // Input Panel
         JPanel inputPanel = new JPanel();
@@ -92,25 +95,32 @@ public class EmployeePanel extends JPanel {
     double totalHoursWorked = PayrollCalculator.calculateTotalHoursWorked(empNum, filteredAttendance, startDate, endDate);
     Employee employee = CSVReaderUtil.getEmployeeById(empNum);
     PayrollCalculator calculator = new PayrollCalculator(List.of(employee), filteredAttendance);
-    double salary = calculator.computeSalary(employee, totalHoursWorked);
 
-    // ✅ Append salary details to the employee details text area
+    // ✅ Compute Gross Salary
+    double grossSalary = (totalHoursWorked / 8) * employee.getDailyWage();
+    double incomeTax = calculator.computeIncomeTax(grossSalary); // ✅ Get Income Tax
+
+    // ✅ Compute Net Salary
+    double sssDeduction = grossSalary * 0.045;
+    double philhealthDeduction = grossSalary * 0.0275;
+    double pagibigDeduction = Math.min(grossSalary * 0.02, 100);
+    double netSalary = grossSalary - (sssDeduction + philhealthDeduction + pagibigDeduction + incomeTax);
+
+    // ✅ Append salary details
     String salaryDetails = "💰 Salary Breakdown:\n"
         + "--------------------------------\n"
         + "Total Hours Worked: " + totalHoursWorked + "\n"
-        + "Gross Salary: PHP " + String.format("%,.2f", (totalHoursWorked / 8) * employee.getDailyWage()) + "\n"
+        + "Gross Salary: PHP " + String.format("%,.2f", grossSalary) + "\n"
         + "Deductions:\n"
-        + "  - SSS: PHP " + String.format("%,.2f", salary * 0.045) + "\n"
-        + "  - PhilHealth: PHP " + String.format("%,.2f", salary * 0.0275) + "\n"
-        + "  - Pag-IBIG: PHP " + String.format("%,.2f", Math.min(salary * 0.02, 100)) + "\n"
+        + "  - SSS: PHP " + String.format("%,.2f", sssDeduction) + "\n"
+        + "  - PhilHealth: PHP " + String.format("%,.2f", philhealthDeduction) + "\n"
+        + "  - Pag-IBIG: PHP " + String.format("%,.2f", pagibigDeduction) + "\n"
+        + "  - Income Tax: PHP " + String.format("%,.2f", incomeTax) + "\n"
         + "--------------------------------\n"
-        + "✅ Net Salary: PHP " + String.format("%,.2f", salary) + "\n";
+        + "✅ Net Salary: PHP " + String.format("%,.2f", netSalary) + "\n";
 
-    // Append to employeeDetailsArea instead of console
     employeeDetailsArea.append("\n" + salaryDetails);
-
-    // Update salary label
-    salaryLabel.setText("💰 Net Salary: PHP " + String.format("%,.2f", salary));
+    salaryLabel.setText("💰 Net Salary: PHP " + String.format("%,.2f", netSalary));
 });
     }
 }

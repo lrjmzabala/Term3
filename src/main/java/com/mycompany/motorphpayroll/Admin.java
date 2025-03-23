@@ -52,7 +52,7 @@ public class Admin {
 
         // Call CSVReaderUtil to handle writing to the CSV file
         CSVReaderUtil.addEmployeeToCSV(employee);
-        System.out.println("✅ Employee added successfully: " + firstName + " " + lastName);
+        System.out.println("✅ Employee added successfully: " + employee.getFullName());
     }
     
     /**

@@ -17,11 +17,20 @@ import java.util.Map;
 
 public class CSVReaderUtil {
     private static final String EMPLOYEE_CSV = "C:\\Users\\Papa\\Downloads\\Copy of MotorPH Employee Data - Employee Details.csv";
+    private static final Map<String, Employee> employeeCache = new HashMap<>();
     private static final String ATTENDANCE_CSV = "C:\\Users\\Papa\\Downloads\\Copy of MotorPH Employee DataHoursWorked - Employee Details.csv";
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a");
     
+    public static void loadEmployeesToCache() {
+    employeeCache.clear(); // Clear cache before reloading
+    List<Employee> employees = readEmployeesFromCSV(EMPLOYEE_CSV);
+    for (Employee emp : employees) {
+        employeeCache.put(emp.getEmployeeNumber(), emp);
+    }
+}
+    
     public static Employee getEmployeeById(String employeeId) {
-        return getEmployeeById(employeeId, EMPLOYEE_CSV);
+        return employeeCache.getOrDefault(employeeId, null);
     }
 
     public static Employee getEmployeeById(String employeeId, String filePath) {
@@ -62,7 +71,17 @@ public class CSVReaderUtil {
         }
     }
 
+    
+    /**
+ * Reads all employees from the CSV file and stores them in a list.
+ * 
+ * @param employeeFile The path to the employee CSV file.
+ * @return A list of Employee objects parsed from the file.
+ */
+    
     public static List<Employee> readEmployeesFromCSV(String employeeFile) {
+        System.out.println("✅ Checking employee file path: " + EMPLOYEE_CSV);
+        System.out.println("📂 Loading employee data...");
         List<Employee> employees = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(employeeFile))) {

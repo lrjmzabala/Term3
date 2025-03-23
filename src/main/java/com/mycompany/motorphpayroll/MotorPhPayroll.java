@@ -11,25 +11,24 @@ import java.util.stream.Collectors;
 public class MotorPhPayroll {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        CSVReaderUtil.loadEmployeesToCache(); // ✅ Load employees into memory once at startup
         
-        while (true) {
-            System.out.println("Login as:\n1. Admin\n2. Employee\n3. Exit");
-            System.out.print("Enter choice: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
+         while (true) {
+        System.out.println("Login as:\n1. Admin\n2. Employee\n3. Exit");
+        System.out.print("Enter choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();  // Consume newline
 
-            if (choice == 1) {
-                adminMenu(scanner);
-            } else if (choice == 2) {
-                employeeMenu(scanner);
-            } else if (choice == 3) {
+        switch (choice) {
+            case 1 -> adminMenu(scanner);
+            case 2 -> employeeMenu(scanner);
+            case 3 -> {
                 System.out.println("Exiting... Goodbye!");
-                break;
-            } else {
-                System.out.println("Invalid choice. Try again.");
+                return;
             }
+            default -> System.out.println("Invalid choice. Try again.");
         }
-        scanner.close();
+    }
     }
 
     private static void adminMenu(Scanner scanner) {

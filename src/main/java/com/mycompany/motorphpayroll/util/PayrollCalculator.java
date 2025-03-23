@@ -9,9 +9,8 @@ import java.time.format.DateTimeFormatter;
 
 public class PayrollCalculator {
 
-    /**
-     * Calculates the total hours worked by an employee.
-     */
+    private double lastIncomeTax = 0.0; // ✅ Store last computed tax
+
     public static double calculateTotalHoursWorked(String empNum, List<Attendance> attendanceRecords, String startDate, String endDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
 
@@ -32,7 +31,6 @@ public class PayrollCalculator {
             return 0.0;
         }
 
-        // Calculate total hours within the date range
         double totalHours = filteredRecords.stream()
             .mapToDouble(Attendance::getTotalWorkedHours)
             .sum();
@@ -44,25 +42,75 @@ public class PayrollCalculator {
     public PayrollCalculator(List<Employee> employees, List<Attendance> attendanceRecords) {
     }
 
-    /**
-     * Computes salary for a given employee based on attendance records.
-     */
     public double computeSalary(Employee employee, double totalHoursWorked) {
-        double dailyWage = employee.getDailyWage();
-        double grossSalary = (totalHoursWorked / 8) * dailyWage; // Gross pay before deductions
-
-        // Deductions (Example Values - Adjust Based on Actual Rules)
-        double sssDeduction = grossSalary * 0.045;   // 4.5% of salary
-        double philhealthDeduction = grossSalary * 0.0275; // 2.75% of salary
-        double pagibigDeduction = Math.min(grossSalary * 0.02, 100); // 2% but max of PHP 100
-
-        double netSalary = grossSalary - (sssDeduction + philhealthDeduction + pagibigDeduction);
-
-        // Print Salary Breakdown
-        System.out.println("💰 Gross Salary: PHP " + grossSalary);
-        System.out.println("📉 Deductions: SSS - " + sssDeduction + ", PhilHealth - " + philhealthDeduction + ", Pag-IBIG - " + pagibigDeduction);
-        System.out.println("✅ Net Salary: PHP " + netSalary);
-
+    try {
+        double grossSalary = calculateGrossSalary(employee, totalHoursWorked);
+        double totalDeductions = calculateDeductions(grossSalary);
+        double netSalary = grossSalary - totalDeductions;
+        
+        printSalaryBreakdown(employee, totalHoursWorked, grossSalary, totalDeductions, netSalary);
         return netSalary;
+    } catch (Exception e) {
+        System.err.println("❌ Error computing salary: " + e.getMessage());
+        return 0.0;
     }
-} // ✅ Missing closing bracket added here
+}
+
+/**
+ * Calculates gross salary based on hours worked.
+ */
+private double calculateGrossSalary(Employee employee, double totalHoursWorked) {
+    return (totalHoursWorked / 8) * employee.getDailyWage();
+}
+
+/**
+ * Computes all deductions including SSS, PhilHealth, Pag-IBIG, and Income Tax.
+ */
+private double calculateDeductions(double grossSalary) {
+    double sss = grossSalary * 0.045;
+    double philhealth = grossSalary * 0.0275;
+    double pagibig = Math.min(grossSalary * 0.02, 100);
+    lastIncomeTax = computeIncomeTax(grossSalary); // ✅ Store computed tax
+    return sss + philhealth + pagibig + lastIncomeTax;
+}
+
+/**
+ * Prints a detailed salary breakdown.
+ */
+private void printSalaryBreakdown(Employee employee, double totalHoursWorked, double grossSalary, double totalDeductions, double netSalary) {
+    System.out.println("--------------------------------");
+    System.out.printf("💼 Total Hours Worked: %.2f\n", totalHoursWorked);
+    System.out.println("📉 Deductions:");
+    System.out.printf("  - SSS: PHP %.2f\n", grossSalary * 0.045);
+    System.out.printf("  - PhilHealth: PHP %.2f\n", grossSalary * 0.0275);
+    System.out.printf("  - Pag-IBIG: PHP %.2f\n", Math.min(grossSalary * 0.02, 100));
+    System.out.printf("  - Income Tax: PHP %.2f\n", lastIncomeTax);
+    System.out.println("--------------------------------");
+    System.out.printf("✅ Net Salary: PHP %.2f\n", netSalary);
+    }
+
+    public double getIncomeTax() {
+        return lastIncomeTax; // ✅ Returns last computed income tax
+    }
+
+    public double computeIncomeTax(double grossSalary) {
+        double tax = 0.0;
+
+        if (grossSalary <= 20832) {
+            tax = 0.0; // No withholding tax
+        } else if (grossSalary <= 33333) {
+            tax = 0.20 * (grossSalary - 20833);
+        } else if (grossSalary <= 66667) {
+            tax = 2500 + 0.25 * (grossSalary - 33333);
+        } else if (grossSalary <= 166667) {
+            tax = 10833 + 0.30 * (grossSalary - 66667);
+        } else if (grossSalary <= 666667) {
+            tax = 40833.33 + 0.32 * (grossSalary - 166667);
+        } else {
+            tax = 200833.33 + 0.35 * (grossSalary - 666667);
+        }
+
+        return tax;
+    }
+
+} 
