@@ -20,6 +20,10 @@ public class mainframe extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Admin",new AdminPanel());
         tabbedPane.addTab("Employee", new EmployeePanel());
+        tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
+        
+
+
         
         add(tabbedPane);
         setLocationRelativeTo(null);

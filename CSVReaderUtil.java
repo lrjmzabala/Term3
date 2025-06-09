@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CSVReaderUtil {
-    private static final String EMPLOYEE_CSV = "C:\\Users\\Papa\\Downloads\\Copy of MotorPH Employee Data - Employee Details.csv";
+    public static final String EMPLOYEE_CSV = "C:\\Users\\Papa\\Downloads\\Copy of MotorPH Employee Data - Employee Details.csv";
     private static final Map<String, Employee> employeeCache = new HashMap<>();
     private static final String ATTENDANCE_CSV = "C:\\Users\\Papa\\Downloads\\Copy of MotorPH Employee DataHoursWorked - Employee Details.csv";
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a");
