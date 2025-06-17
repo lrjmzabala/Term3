@@ -110,9 +110,7 @@ public class AdminPanel extends JPanel {
                             Double.parseDouble(hourlyRateField.getText().trim())
                         );
                         // The Admin class itself now prints success/error.
-                        // You can add a dialog here based on whether the operation succeeded.
-                        // For simplicity, let's assume it works if no error dialog pops up from validation.
-                        // A more robust way is to have Admin methods return boolean success.
+                       
                         JOptionPane.showMessageDialog(null, "✅ Employee Added Successfully (check console for details)!");
                         clearFields(); // Clear fields after successful addition
                     } catch (NumberFormatException ex) {
