@@ -69,7 +69,7 @@ public class Admin extends Person {
     }
 
     /**
-     * Retrieves the details of a specific employee.
+     * Retrieves the details of a specific employee as a formatted string.
      * @param empNum The employee number.
      * @return A formatted string of employee details, or null if not found.
      */
@@ -81,6 +81,18 @@ public class Admin extends Person {
         }
         return null; // Employee not found
     }
+
+    // --- Add the new method here ---
+    /**
+     * Retrieves a specific Employee object by employee number.
+     * This is useful for populating GUI fields.
+     * @param empNum The employee number.
+     * @return The Employee object if found, or null otherwise.
+     */
+    public Employee getEmployeeDetailsObject(String empNum) {
+        return CSVReaderUtil.getEmployeeById(empNum);
+    }
+    // --- End of new method ---
 
     /**
      * Updates an existing employee's record.
@@ -121,9 +133,9 @@ public class Admin extends Person {
 
         // Create a new Employee object with the updated details
         Employee updatedEmployee = new Employee(empNum, lastName, firstName, birthday, address, phoneNumber,
-                                                sssNumber, philHealth, tin, pagibig, status,
-                                                position, supervisor, basicSalary, riceSubsidy,
-                                                phoneAllowance, clothingAllowance, grossSemiMonthly, hourlyRate);
+                                                 sssNumber, philHealth, tin, pagibig, status,
+                                                 position, supervisor, basicSalary, riceSubsidy,
+                                                 phoneAllowance, clothingAllowance, grossSemiMonthly, hourlyRate);
 
         return CSVReaderUtil.updateEmployeeInCSV(updatedEmployee);
     }
