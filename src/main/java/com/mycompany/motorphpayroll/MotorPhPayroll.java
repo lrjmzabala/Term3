@@ -32,7 +32,7 @@ public class MotorPhPayroll {
     }
 
     private static void adminMenu(Scanner scanner) {
-        Admin adminPanel = new Admin(); // Initialize Admin instance
+        Admin admin = new Admin("System", "Admin", "N/A");  // Initialize Admin instance
 
         while (true) {
             System.out.println("\nAdmin Panel:");
@@ -83,9 +83,6 @@ public class MotorPhPayroll {
                 System.out.print("Enter Hourly Rate: ");
                 double hourlyRate = scanner.nextDouble();
                 scanner.nextLine(); // Consume newline
-                
-                adminPanel.addEmployee(empNum, firstName, lastName, dob, address, phoneNumber, sss, philhealth, tin, pagIbig, status, position, supervisor, basicSalary, riceSubsidy, phoneAllowance, clothingAllowance, grossSemimonthly, hourlyRate);
-                System.out.println("✅ Employee added successfully!");
                 
             } else if (adminChoice == 2) {
                 displayEmployees();

@@ -21,4 +21,6 @@ public abstract class Person {
     public String getPhoneNumber() {
         return phoneNumber;
     }
+    
+    public abstract String getRoleDescription();
 }

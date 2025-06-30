@@ -1,5 +1,10 @@
 package com.mycompany.motorphpayroll.util;
 
+import com.mycompany.motorphpayroll.Deduction.Deduction;
+import com.mycompany.motorphpayroll.Deduction.IncomeTaxDeduction;
+import com.mycompany.motorphpayroll.Deduction.PagIbigDeduction;
+import com.mycompany.motorphpayroll.Deduction.PhilHealthDeduction;
+import com.mycompany.motorphpayroll.Deduction.SSSDeduction;
 import com.mycompany.motorphpayroll.model.Employee;
 import com.mycompany.motorphpayroll.model.Attendance;
 import java.time.LocalDate;
@@ -7,7 +12,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
 
+
 public class PayrollCalculator {
+    
+    //private double lastIncomeTax = 0.0;
+
+    private List<Deduction> deductions = List.of(
+        new SSSDeduction(),
+        new PhilHealthDeduction(),
+        new PagIbigDeduction(),
+        new IncomeTaxDeduction() // ✅ Optional if IncomeTax needs to store back the value
+    );
 
     private double lastIncomeTax = 0.0; // ✅ Store last computed tax
 
@@ -67,11 +82,15 @@ private double calculateGrossSalary(Employee employee, double totalHoursWorked) 
  * Computes all deductions including SSS, PhilHealth, Pag-IBIG, and Income Tax.
  */
 private double calculateDeductions(double grossSalary) {
-    double sss = grossSalary * 0.045;
-    double philhealth = grossSalary * 0.0275;
-    double pagibig = Math.min(grossSalary * 0.02, 100);
-    lastIncomeTax = computeIncomeTax(grossSalary); // ✅ Store computed tax
-    return sss + philhealth + pagibig + lastIncomeTax;
+    double total = 0.0;
+    for (Deduction d : deductions) {  // Using the instance variable 'deductions'
+        double value = d.compute(grossSalary);
+        if (d instanceof IncomeTaxDeduction) {
+            lastIncomeTax = value;
+        }
+        total += value;
+    }
+    return total;
 }
 
 /**

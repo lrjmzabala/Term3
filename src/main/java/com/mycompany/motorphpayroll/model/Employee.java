@@ -20,15 +20,17 @@ public class Employee extends Person {
     private final double clothingAllowance;
     private final double grossSemiMonthlyRate;
     private final double hourlyRate;
-
-    // Constructor for CSV data
-    public Employee(String employeeNumber, String lastName, String firstName, String birthday, 
-                    String address, String phoneNumber, String sssNumber, String philhealthNumber, 
-                    String tinNumber, String pagibigNumber, String status, String position, 
-                    String supervisor, double basicSalary, double riceSubsidy, 
-                    double phoneAllowance, double clothingAllowance, 
+    
+    
+    public Employee(String employeeNumber, String lastName, String firstName, String birthday,
+                    String address, String phoneNumber, String sssNumber, String philhealthNumber,
+                    String tinNumber, String pagibigNumber, String status, String position,
+                    String supervisor, double basicSalary, double riceSubsidy,
+                    double phoneAllowance, double clothingAllowance,
                     double grossSemiMonthlyRate, double hourlyRate) {
+        // Calling superclass constructor (Person)
         super(firstName, lastName, phoneNumber);
+
         this.employeeNumber = employeeNumber;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -58,8 +60,8 @@ public class Employee extends Person {
     // Overriding toString() method to properly format Employee details
     @Override
     public String toString() {
-        return "Employee Number: " + employeeNumber + "\n" +
-               "Name: " + getFullName() + "\n" +
+        return getRoleDescription() + "\n" +
+               "Employee Number: " + employeeNumber + "\n" +
                "Birthday: " + birthday + "\n" +
                "Address: " + address + "\n" +
                "Phone: " + phoneNumber + "\n" +
@@ -76,10 +78,11 @@ public class Employee extends Person {
                "Clothing Allowance: " + clothingAllowance + "\n" +
                "Gross Semi-Monthly Rate: " + grossSemiMonthlyRate + "\n" +
                "Hourly Rate: " + hourlyRate + "\n" +
+               "Daily Rate (Calculated): " + getDailyRate() + "\n" + // Display calculated daily rate
                "--------------------------------------";
     }
 
-    // Getters
+    // Getters for all final fields
     public String getEmployeeNumber() { return employeeNumber; }
     public String getLastName() { return lastName; }
     public String getFirstName() { return firstName; }
@@ -100,8 +103,24 @@ public class Employee extends Person {
     public double getGrossSemiMonthlyRate() { return grossSemiMonthlyRate; }
     public double getHourlyRate() { return hourlyRate; }
 
-    // ✅ Fix: Implement the getDailyWage() method correctly
+
+   
+    public double getDailyRate() {
+        return this.hourlyRate * 8; 
+    }
+
+    
     public double getDailyWage() {
-        return hourlyRate * 8; // Assuming an 8-hour workday
+        return this.hourlyRate * 8;
+    }
+
+    @Override
+    public String getRoleDescription() {
+        return "Employee: " + position;
+    }
+
+    
+    public String getId() {
+        return employeeNumber;
     }
 }
