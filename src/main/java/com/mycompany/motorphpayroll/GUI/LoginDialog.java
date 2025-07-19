@@ -1,9 +1,13 @@
-package com.mycompany.motorphpayroll.GUI; // Or a new package like com.mycompany.motorphpayroll.Login
+package com.mycompany.motorphpayroll.GUI;
 
+import com.mycompany.motorphpayroll.model.User; // Import the User class
+import com.mycompany.motorphpayroll.util.CSVReaderUtil; // Import the CSVReaderUtil
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException; // Required for handling file reading errors
+import java.util.Map; // Required for Map to store users
 
 public class LoginDialog extends JDialog {
     private JTextField usernameField;
@@ -13,6 +17,9 @@ public class LoginDialog extends JDialog {
 
     private boolean loggedIn = false;
     private String userRole = null; // "Admin" or "Employee"
+
+    // ⭐ NEW: Map to store user credentials loaded from CSV
+    private Map<String, User> userCredentials;
 
     public LoginDialog(JFrame parent) {
         super(parent, "Login to MotorPH Payroll", true); // true makes it modal
@@ -38,7 +45,6 @@ public class LoginDialog extends JDialog {
         messageLabel.setForeground(Color.RED); // To show error messages
         messageLabel.setHorizontalAlignment(SwingConstants.CENTER); // Center the message
         inputPanel.add(messageLabel); // Add message label spanning two columns
-        // Set messageLabel to span 2 columns by setting gridbagconstraints if using GridBagLayout
         // For GridLayout, it will just take the next available cell.
 
         add(inputPanel, BorderLayout.CENTER);
@@ -72,29 +78,59 @@ public class LoginDialog extends JDialog {
                 usernameField.requestFocusInWindow();
             }
         });
+
+        // ⭐ NEW: Load user credentials when the dialog is initialized
+        loadUserCredentials();
     }
+
+    /**
+     * ⭐ NEW METHOD: Loads user credentials from the Login Credentials.csv file.
+     */
+    private void loadUserCredentials() {
+        try {
+            userCredentials = CSVReaderUtil.readUsersFromLoginCSV();
+            // Optional: For debugging, print how many users were loaded
+            System.out.println("Loaded " + userCredentials.size() + " user credentials from CSV.");
+        } catch (IOException e) {
+            // Handle the error if the CSV file cannot be read
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                "Error loading login credentials. Please ensure 'Login Credentials.csv' is in 'src/main/resources' and formatted correctly.",
+                "Login Data Error",
+                JOptionPane.ERROR_MESSAGE);
+            // Optionally disable login button or exit if critical
+            loginButton.setEnabled(false);
+            messageLabel.setText("No login data available.");
+        }
+    }
+
 
     private void attemptLogin() {
         String username = usernameField.getText();
-        String password = new String(passwordField.getPassword()); // Get password as String
+        String password = new String(passwordField.getPassword());
 
-        // --- Simple Hardcoded Authentication (REPLACE WITH REAL LOGIC) ---
-        if (username.equals("admin") && password.equals("adminpass")) {
-            loggedIn = true;
-            userRole = "Admin";
-            dispose(); // Close the dialog
-        } else if (username.equals("employee") && password.equals("emppass")) {
-            loggedIn = true;
-            userRole = "Employee";
-            dispose(); // Close the dialog
+        messageLabel.setText(""); // Clear previous messages
+
+        // ⭐ MODIFIED: Check against loaded user credentials
+        if (userCredentials == null || userCredentials.isEmpty()) {
+            messageLabel.setText("No login data available. Please contact admin.");
+            return;
+        }
+
+        if (userCredentials.containsKey(username)) {
+            User user = userCredentials.get(username);
+            if (user.getPassword().equals(password)) {
+                loggedIn = true;
+                userRole = user.getRole(); // Set the role from the User object
+                dispose(); // Close the dialog on successful login
+            } else {
+                messageLabel.setText("Invalid password.");
+                passwordField.setText(""); // Clear password field on failure
+            }
         } else {
             messageLabel.setText("Invalid username or password.");
             passwordField.setText(""); // Clear password field on failure
         }
-        // --- End of Simple Authentication ---
-
-        // In a real application, you'd check against a database or CSV for credentials.
-        // Example: if (AuthenticationService.authenticate(username, password)) { ... }
     }
 
     public boolean isLoggedIn() {
@@ -103,6 +139,11 @@ public class LoginDialog extends JDialog {
 
     public String getUserRole() {
         return userRole;
+    }
+
+    // ⭐ ADD THIS NEW METHOD ⭐
+    public String getUsername() {
+        return usernameField.getText();
     }
 
     // You might want to clear fields if the dialog is reopened

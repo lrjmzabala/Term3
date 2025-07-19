@@ -23,9 +23,9 @@ public class ViewEmployeesPanel extends JPanel {
         DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
         employeeTable = new JTable(tableModel);
 
-        // --- CORRECTED LINE BELOW ---
-        // Instead of "EMPLOYEE_CSV" (a string literal), use CSVReaderUtil.EMPLOYEE_CSV
-        List<Employee> employees = CSVReaderUtil.readEmployeesFromCSV(CSVReaderUtil.EMPLOYEE_CSV);
+        // --- CORRECTED LINE HERE ---
+        // Changed CSVReaderUtil.EMPLOYEE_CSV to CSVReaderUtil.getWritableEmployeeCsvPath()
+        List<Employee> employees = CSVReaderUtil.readEmployeesFromCSV(CSVReaderUtil.getWritableEmployeeCsvPath());
 
         if (employees.isEmpty()) {
             System.out.println("No employee data loaded. Check CSV file path and content.");
@@ -49,7 +49,7 @@ public class ViewEmployeesPanel extends JPanel {
                     emp.getRiceSubsidy(),
                     emp.getPhoneAllowance(),
                     emp.getClothingAllowance(),
-                    emp.getDailyRate()
+                    emp.getDailyRate() // Assuming getDailyRate() exists in your Employee model
                 });
             }
         }

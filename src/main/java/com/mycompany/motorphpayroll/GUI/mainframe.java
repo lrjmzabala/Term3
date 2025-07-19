@@ -1,80 +1,73 @@
 package com.mycompany.motorphpayroll.GUI;
 
+import com.mycompany.motorphpayroll.model.User; // Import the User class if not already
+import com.mycompany.motorphpayroll.util.CSVReaderUtil;
 import javax.swing.*;
-import java.awt.*; // Import for card layout
+import java.awt.*;
 
-/**
- * Main application frame handling login and panel display.
- */
 public class mainframe extends JFrame {
 
-    private JPanel cardPanel; // Panel to hold different views (login, admin, employee)
-    private CardLayout cardLayout; // Layout manager for cardPanel
+    private JTabbedPane tabbedPane;
+    private JPanel adminPanel;
+    private JPanel viewAllEmployeesPanel;
+    private JPanel employeeSelfServicePanel; // To be used for individual employee view
 
     public mainframe() {
         setTitle("MotorPH Payroll System");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(800, 600); // Adjust size as needed
         setLocationRelativeTo(null); // Center the frame
 
-        // Initialize CardLayout and its panel
-        cardLayout = new CardLayout();
-        cardPanel = new JPanel(cardLayout);
-        add(cardPanel); // Add the card panel to the mainframe
+        // Initialize CSV paths and load initial data before any login attempts
+        CSVReaderUtil.initializeWritableCsvPaths();
+        CSVReaderUtil.loadEmployeesToCache(); // Ensure employee data is loaded if needed globally
 
-        // This is more of a placeholder, as the JDialog handles the initial login.
-        JPanel welcomePanel = new JPanel(new BorderLayout());
-        JLabel welcomeLabel = new JLabel("Please log in to continue.", SwingConstants.CENTER);
-        welcomeLabel.setFont(new Font("Serif", Font.BOLD, 24));
-        welcomePanel.add(welcomeLabel, BorderLayout.CENTER);
-        cardPanel.add(welcomePanel, "Welcome");
-
-
-        // Show the login dialog first
+        // Create and show the Login Dialog first
         LoginDialog loginDialog = new LoginDialog(this);
-        loginDialog.setVisible(true); // This call blocks until dialog is closed
+        loginDialog.setVisible(true);
 
         // After the dialog closes, check if login was successful
         if (loginDialog.isLoggedIn()) {
             String role = loginDialog.getUserRole();
-            if (role.equals("Admin")) {
-                setupAdminView(); // Method to set up Admin specific tabs
-                cardLayout.show(cardPanel, "MainTabs"); // Show the main application view
-            } else if (role.equals("Employee")) {
-                setupEmployeeView(); // Method to set up Employee specific tabs
-                cardLayout.show(cardPanel, "MainTabs"); // Show the main application view
-            } else {
-                // Should not happen if roles are correctly handled
-                JOptionPane.showMessageDialog(this, "Unknown role. Exiting.", "Error", JOptionPane.ERROR_MESSAGE);
-                System.exit(0);
+            // ⭐ CORRECTED LINE: Use the getter method
+            String loggedInUsername = loginDialog.getUsername(); 
+
+            System.out.println("User logged in: " + loggedInUsername + " with role: " + role); // For debugging
+
+            // Initialize main UI components
+            tabbedPane = new JTabbedPane();
+            add(tabbedPane, BorderLayout.CENTER);
+
+            // Initialize panels
+            adminPanel = new AdminPanel(); // Assuming AdminPanel exists
+            viewAllEmployeesPanel = new ViewEmployeesPanel(); // Assuming ViewEmployeesPanel exists and shows all employees
+
+            // Add panels based on role
+            if ("Admin".equalsIgnoreCase(role)) { // Compare role (case-insensitive)
+                tabbedPane.addTab("Admin Panel", adminPanel);
+                tabbedPane.addTab("View All Employees", viewAllEmployeesPanel);
+                // Add any other admin-specific panels
+            } else if ("Employee".equalsIgnoreCase(role)) { // For Employee role
+                // Create the EmployeePanel for the logged-in employee
+                // The username from LoginDialog is typically the employee number for employees
+                employeeSelfServicePanel = new EmployeePanel(loggedInUsername); // Pass the logged-in employee number
+                tabbedPane.addTab("My Details & Salary", employeeSelfServicePanel);
             }
+            // You can add more roles/conditions as needed
+
+            // Make the mainframe visible ONLY after successful login and UI setup
+            setVisible(true);
         } else {
-            // User cancelled login or failed to log in
-            JOptionPane.showMessageDialog(this, "Login cancelled or failed. Exiting application.", "Exiting", JOptionPane.INFORMATION_MESSAGE);
+            // Login failed or was cancelled, exit the application
+            JOptionPane.showMessageDialog(this, "Login failed or cancelled. Exiting application.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
     }
 
-    private void setupAdminView() {
-        JTabbedPane adminTabbedPane = new JTabbedPane();
-        adminTabbedPane.addTab("Admin Panel", new AdminPanel()); 
-        adminTabbedPane.addTab("View All Employees", new ViewEmployeesPanel()); // General view for admin
-      
-        cardPanel.add(adminTabbedPane, "MainTabs"); // Add to card panel
-    }
-
-    private void setupEmployeeView() {
-        JTabbedPane employeeTabbedPane = new JTabbedPane();
-        employeeTabbedPane.addTab("Employee Dashboard", new EmployeePanel());
-       
-        cardPanel.add(employeeTabbedPane, "MainTabs"); // Add to card panel
-    }
-
-
     public static void main(String[] args) {
+        // Run the GUI on the Event Dispatch Thread (EDT)
         SwingUtilities.invokeLater(() -> {
-            mainframe frame = new mainframe();
-            frame.setVisible(true);
+            new mainframe();
         });
     }
 }
