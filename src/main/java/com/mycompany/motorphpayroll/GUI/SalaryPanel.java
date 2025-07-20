@@ -10,7 +10,7 @@ public class SalaryPanel extends JPanel {
     private JButton viewSalaryButton;
 
     public SalaryPanel() {
-        setLayout(new GridLayout(3, 2)); // Simple Grid layout
+        setLayout(new GridLayout(3, 2));
 
         add(new JLabel("Start Date (MM/DD/YYYY):"));
         startDateField = new JTextField(10);

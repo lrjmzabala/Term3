@@ -1,21 +1,21 @@
 package com.mycompany.motorphpayroll.GUI;
 
 import com.mycompany.motorphpayroll.model.Employee;
-import com.mycompany.motorphpayroll.model.Attendance; // Might need this later for attendance views
+import com.mycompany.motorphpayroll.model.Attendance; 
 import com.mycompany.motorphpayroll.util.CSVReaderUtil;
-import com.mycompany.motorphpayroll.util.PayrollCalculator; // Might need this later for payroll calculations
+import com.mycompany.motorphpayroll.util.PayrollCalculator; 
 
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel; // For JTable
+import javax.swing.table.DefaultTableModel; 
 import java.awt.*;
 import java.util.List;
 import java.util.Vector; // For DefaultTableModel data
-import java.util.Date; // <--- ADD THIS LINE IF MISSING
-import java.time.LocalDate; // <--- ADD THIS LINE IF MISSING
-import java.time.format.DateTimeFormatter; // <--- ADD THIS LINE IF MISSING
+import java.util.Date;
+import java.time.LocalDate; 
+import java.time.format.DateTimeFormatter; 
 
 public class ViewEmployeesPanel extends JPanel {
 
@@ -37,14 +37,14 @@ public class ViewEmployeesPanel extends JPanel {
 
 
     public ViewEmployeesPanel() {
-        setLayout(new BorderLayout(10, 10)); // Outer layout
+        setLayout(new BorderLayout(10, 10)); 
 
         // --- Employee List/Table ---
         String[] columnNames = {"Employee #", "Last Name", "First Name", "Position", "Basic Salary"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return false; 
             }
         };
         employeeTable = new JTable(tableModel);
@@ -70,7 +70,7 @@ public class ViewEmployeesPanel extends JPanel {
         employeeDetailsDisplayArea = new JTextArea(15, 30);
         employeeDetailsDisplayArea.setEditable(false);
         JScrollPane detailsScrollPane = new JScrollPane(employeeDetailsDisplayArea);
-        detailsPanel.add(detailsScrollPane, BorderLayout.NORTH); // Employee full details at the top of this panel
+        detailsPanel.add(detailsScrollPane, BorderLayout.NORTH); 
 
         // Payroll Calculation and Display Sub-Panel
         JPanel payrollPanel = new JPanel(new GridBagLayout());
@@ -81,7 +81,7 @@ public class ViewEmployeesPanel extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
 
         int row = 0;
-        selectedEmployeeNameLabel = addLabelToPanel(payrollPanel, "Employee: N/A", gbc, row++, 2); // Spans 2 columns
+        selectedEmployeeNameLabel = addLabelToPanel(payrollPanel, "Employee: N/A", gbc, row++, 2); 
         addLabelToPanel(payrollPanel, "Basic Salary:", basicSalaryLabel = new JLabel("PHP 0.00"), gbc, row++);
         addLabelToPanel(payrollPanel, "Total Hours Worked:", totalHoursWorkedLabel = new JLabel("0.00 hours"), gbc, row++);
         addLabelToPanel(payrollPanel, "Gross Salary:", grossSalaryLabel = new JLabel("PHP 0.00"), gbc, row++);
@@ -129,11 +129,11 @@ public class ViewEmployeesPanel extends JPanel {
     private JLabel addLabelToPanel(JPanel panel, String labelText, JLabel valueLabel, GridBagConstraints gbc, int row) {
         gbc.gridx = 0;
         gbc.gridy = row;
-        gbc.gridwidth = 1; // Reset to 1 column width
+        gbc.gridwidth = 1; 
         panel.add(new JLabel(labelText), gbc);
         gbc.gridx = 1;
         panel.add(valueLabel, gbc);
-        return valueLabel; // Return the JLabel so it can be set as a field
+        return valueLabel; 
     }
     
     private JLabel addLabelToPanel(JPanel panel, String text, GridBagConstraints gbc, int row, int gridwidth) {
@@ -230,7 +230,7 @@ public class ViewEmployeesPanel extends JPanel {
 
         double sssDeduction = grossSalary * 0.045; // Placeholder
         double philhealthDeduction = grossSalary * 0.0275; // Placeholder
-        double pagibigDeduction = Math.min(grossSalary * 0.02, 100); // Max 100
+        double pagibigDeduction = Math.min(grossSalary * 0.02, 100); 
         double totalDeductions = sssDeduction + philhealthDeduction + pagibigDeduction + incomeTax;
         double netSalary = grossSalary - totalDeductions;
         

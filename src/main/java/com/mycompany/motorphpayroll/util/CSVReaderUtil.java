@@ -8,12 +8,12 @@ import java.util.*;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.net.URL; // Added for resource loading
+import java.net.URL; 
 
 public class CSVReaderUtil {
     public static final String EMPLOYEE_CSV_RESOURCE = "/employee_details.csv";
     public static final String ATTENDANCE_CSV_RESOURCE = "/attendance_records.csv";
-    public static final String LOGIN_CREDENTIALS_CSV_RESOURCE = "/Login Credentials.csv"; // Your original name
+    public static final String LOGIN_CREDENTIALS_CSV_RESOURCE = "/Login Credentials.csv"; 
 
     private static final Map<String, Employee> employeeCache = new HashMap<>();
     // ADDED: Cache for users
@@ -27,7 +27,6 @@ public class CSVReaderUtil {
     private static String writableLoginCredentialsCsvPath; // Path for the writable user file
 
     // Static initializer block: This code runs once when the class is loaded.
-    // It's crucial for setting up file paths and loading initial data.
     static {
         initializeWritableCsvPaths(); // Set up paths and copy resources if needed
         loadAllDataToCache(); // Load all data into caches
@@ -50,7 +49,7 @@ public class CSVReaderUtil {
         // Copy resources to writable paths if they don't exist
         copyResourceToFile(EMPLOYEE_CSV_RESOURCE, writableEmployeeCsvPath);
         copyResourceToFile(ATTENDANCE_CSV_RESOURCE, writableAttendanceCsvPath);
-        copyResourceToFile(LOGIN_CREDENTIALS_CSV_RESOURCE, writableLoginCredentialsCsvPath); // Use the correct source for login credentials
+        copyResourceToFile(LOGIN_CREDENTIALS_CSV_RESOURCE, writableLoginCredentialsCsvPath);
     }
 
     private static void copyResourceToFile(String resourcePath, String filePath) {
@@ -94,7 +93,7 @@ public class CSVReaderUtil {
         userCache.clear(); // Clear existing cache before reloading
         try (BufferedReader reader = new BufferedReader(new FileReader(writableLoginCredentialsCsvPath))) {
             String line;
-            boolean firstLine = true; // Flag to skip header row
+            boolean firstLine = true;
 
             while ((line = reader.readLine()) != null) {
                 if (firstLine) {
@@ -102,8 +101,8 @@ public class CSVReaderUtil {
                     continue; // Skip the header row
                 }
 
-                String[] parts = splitCSVLine(line); // Use the existing robust splitCSVLine
-                if (parts.length >= 3) { // Ensure enough columns for Username, Password, Role
+                String[] parts = splitCSVLine(line); 
+                if (parts.length >= 3) { 
                     String username = parts[0].trim();
                     String password = parts[1].trim();
                     String role = parts[2].trim();
@@ -218,7 +217,7 @@ public class CSVReaderUtil {
         System.out.println("Loaded " + employeeCache.size() + " employees into cache.");
     }
 
-    // MODIFIED: This method now also populates the attendanceCache
+    // This method now also populates the attendanceCache
     public static void loadAttendanceToCache() {
         attendanceCache.clear(); // Clear existing cache before reloading
         List<Attendance> allAttendance = readAttendanceFromCSV(writableAttendanceCsvPath);
@@ -228,7 +227,7 @@ public class CSVReaderUtil {
         System.out.println("Loaded " + allAttendance.size() + " attendance records into cache for " + attendanceCache.size() + " employees.");
     }
 
-    // MODIFIED: This method now gets from attendanceCache first
+    //This method now gets from attendanceCache first
     public static List<Attendance> getAllAttendanceRecords() {
         // Return a new list containing all values from the attendance cache
         List<Attendance> allRecords = new ArrayList<>();
@@ -505,7 +504,7 @@ public class CSVReaderUtil {
             loadEmployeesToCache(); // Reload cache after modifying file
         } else {
             System.out.println("❌ Employee with ID " + employeeNumber + " not found for deletion.");
-            // No need for (new Date()).toLocaleString(); here, it's out of place
+          
         }
         return removed;
     }

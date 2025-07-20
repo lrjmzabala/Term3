@@ -12,11 +12,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
-import com.toedter.calendar.JDateChooser; // Import JDateChooser
-import java.util.Date; // For JDateChooser's getDate() method
+import com.toedter.calendar.JDateChooser; 
+import java.util.Date;
 
 public class EmployeePanel extends JPanel {
-    private JDateChooser startDateChooser, endDateChooser; // Changed to JDateChooser
+    private JDateChooser startDateChooser, endDateChooser; 
     private JTextArea employeeDetailsArea;
     private JLabel salaryLabel;
     private JButton viewSalaryButton;
@@ -69,14 +69,14 @@ public class EmployeePanel extends JPanel {
 
         salaryPanel.add(new JLabel("Start Date:"));
         startDateChooser = new JDateChooser();
-        startDateChooser.setDateFormatString("MM/dd/yyyy"); // Set desired date format
+        startDateChooser.setDateFormatString("MM/dd/yyyy"); 
         startDateChooser.setPreferredSize(new Dimension(120, 25)); // Adjust size
         salaryPanel.add(startDateChooser);
 
         salaryPanel.add(new JLabel("End Date:"));
         endDateChooser = new JDateChooser();
-        endDateChooser.setDateFormatString("MM/dd/yyyy"); // Set desired date format
-        endDateChooser.setPreferredSize(new Dimension(120, 25)); // Adjust size
+        endDateChooser.setDateFormatString("MM/dd/yyyy"); 
+        endDateChooser.setPreferredSize(new Dimension(120, 25)); 
         salaryPanel.add(endDateChooser);
 
         viewSalaryButton = new JButton("View Salary");
@@ -147,7 +147,7 @@ public class EmployeePanel extends JPanel {
 
             double sssDeduction = grossSalary * 0.045; // Placeholder, ideally from SSS Table
             double philhealthDeduction = grossSalary * 0.0275; // Placeholder
-            double pagibigDeduction = Math.min(grossSalary * 0.02, 100); // Max 100
+            double pagibigDeduction = Math.min(grossSalary * 0.02, 100); 
             double totalDeductions = sssDeduction + philhealthDeduction + pagibigDeduction + incomeTax;
             double netSalary = grossSalary - totalDeductions;
 

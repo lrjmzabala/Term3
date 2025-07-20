@@ -6,9 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-// import java.io.IOException; // No longer needed as file reading is internal to CSVReaderUtil cache
-import java.util.Optional; // ADD THIS IMPORT for Optional
-// import java.util.Map; // REMOVE THIS IMPORT unless you use Map elsewhere in this class
+import java.util.Optional; 
 
 public class LoginDialog extends JDialog {
     private JTextField usernameField;
@@ -18,9 +16,8 @@ public class LoginDialog extends JDialog {
 
     private boolean loggedIn = false;
     private String userRole = null;
-    private String loggedInUsername = null; // Store the successfully logged in username
+    private String loggedInUsername = null; 
 
-    // private Map<String, User> userCredentials; // REMOVE THIS FIELD, we'll use CSVReaderUtil directly
 
     public LoginDialog(JFrame parent) {
         super(parent, "Login to MotorPH Payroll", true);
@@ -85,29 +82,10 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        // The loadUserCredentials() method is no longer needed here
-        // as CSVReaderUtil.loadAllDataToCache() is called in the mainframe
-        // and also when the LoginDialog window opens.
-        // remove: loadUserCredentials();
+        
     }
 
-    // REMOVE THIS METHOD entirely as it's no longer needed
-    /*
-    private void loadUserCredentials() {
-        try {
-            userCredentials = CSVReaderUtil.readUsersFromLoginCSV();
-            System.out.println("Loaded " + userCredentials.size() + " user credentials from CSV.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this,
-                "Error loading login credentials. Please ensure 'Login Credentials.csv' is in 'src/main/resources' and formatted correctly.",
-                "Login Data Error",
-                JOptionPane.ERROR_MESSAGE);
-            loginButton.setEnabled(false);
-            messageLabel.setText("No login data available.");
-        }
-    }
-    */
+    
 
     private void attemptLogin() {
         String enteredUsername = usernameField.getText().trim(); // Use a new variable to avoid confusion

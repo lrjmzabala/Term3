@@ -1,7 +1,7 @@
 package com.mycompany.motorphpayroll.GUI;
 
 import com.mycompany.motorphpayroll.model.User;
-import com.mycompany.motorphpayroll.util.CSVReaderUtil; // Keep this import
+import com.mycompany.motorphpayroll.util.CSVReaderUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,6 +19,13 @@ public class mainframe extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 700);
         setLocationRelativeTo(null);
+
+       
+        Color backgroundColor = new Color(135, 206, 235); // Sky Blue (example)
+        
+        // Set the background color of the JFrame's content pane
+        getContentPane().setBackground(backgroundColor);
+        // --- END OF BACKGROUND COLOR ADDITION ---
 
         CSVReaderUtil.loadAllDataToCache();
 
@@ -56,10 +63,8 @@ public class mainframe extends JFrame {
 
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        // CHANGE THIS LINE: Change "File" to "Menu" or "Options"
-        JMenu appMenu = new JMenu("Menu"); // Changed from "File" to "Menu"
+        JMenu appMenu = new JMenu("Menu");
 
-        // Sign Out Menu Item
         JMenuItem signOutMenuItem = new JMenuItem("Sign Out");
         signOutMenuItem.addActionListener(new ActionListener() {
             @Override
@@ -67,20 +72,19 @@ public class mainframe extends JFrame {
                 handleSignOut();
             }
         });
-        appMenu.add(signOutMenuItem); // Add Sign Out to the new menu
+        appMenu.add(signOutMenuItem);
 
-        // Exit Menu Item
         JMenuItem exitMenuItem = new JMenuItem("Exit");
         exitMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0); // Exit the application
+                System.exit(0);
             }
         });
-        appMenu.add(exitMenuItem); // Add Exit to the new menu
+        appMenu.add(exitMenuItem);
 
-        menuBar.add(appMenu); // Add the new menu to the menu bar
-        setJMenuBar(menuBar); // Set this menu bar to the JFrame
+        menuBar.add(appMenu);
+        setJMenuBar(menuBar);
     }
 
     private void handleSignOut() {

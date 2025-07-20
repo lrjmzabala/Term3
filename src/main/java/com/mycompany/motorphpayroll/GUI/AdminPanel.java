@@ -2,7 +2,7 @@ package com.mycompany.motorphpayroll.GUI;
 
 import com.mycompany.motorphpayroll.model.Employee;
 import com.mycompany.motorphpayroll.model.User;
-import com.mycompany.motorphpayroll.model.Attendance; // Import Attendance model
+import com.mycompany.motorphpayroll.model.Attendance; 
 import com.mycompany.motorphpayroll.util.CSVReaderUtil;
 import javax.swing.*;
 import java.awt.*;
@@ -10,8 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Map;
-import javax.swing.text.MaskFormatter; // For formatted date/time input
-import java.text.ParseException; // For MaskFormatter exceptions
+import javax.swing.text.MaskFormatter;
+import java.text.ParseException; 
 
 public class AdminPanel extends JPanel {
 
@@ -99,7 +99,6 @@ public class AdminPanel extends JPanel {
         JPanel attendanceInputPanel = new JPanel(new GridBagLayout());
         attendanceInputPanel.setBorder(BorderFactory.createTitledBorder("Attendance Correction"));
         
-        // Use a new GBC for this sub-panel to manage its internal layout without affecting the main panel's `row` counter directly
         GridBagConstraints gbcAtt = new GridBagConstraints();
         gbcAtt.insets = new Insets(5, 5, 5, 5);
         gbcAtt.fill = GridBagConstraints.HORIZONTAL;
@@ -118,14 +117,14 @@ public class AdminPanel extends JPanel {
 
         gbcAtt.gridx = 0;
         gbcAtt.gridy = attRow;
-        gbcAtt.gridwidth = 2; // Span across two columns
+        gbcAtt.gridwidth = 2; 
         attendanceInputPanel.add(attendanceButtonPanel, gbcAtt);
         attRow++;
 
         // Add the attendance section to the main input panel
         gbc.gridx = 0;
         gbc.gridy = row;
-        gbc.gridwidth = 2; // This sub-panel should span both columns of the main input panel
+        gbc.gridwidth = 2;
         inputAndAttendancePanel.add(attendanceInputPanel, gbc);
         row++;
 
@@ -133,7 +132,7 @@ public class AdminPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(inputAndAttendancePanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setPreferredSize(new Dimension(500, 700)); // Adjusted size for new fields
+        scrollPane.setPreferredSize(new Dimension(500, 700)); 
 
         add(scrollPane, BorderLayout.WEST);
 
@@ -420,9 +419,9 @@ public class AdminPanel extends JPanel {
                 Map<String, User> allUsers = CSVReaderUtil.readUsersFromLoginCSV();
                 User foundUser = allUsers.get(empNum);
                 if (foundUser != null) {
-                    // Do not display password for security
-                    userPasswordField.setText(""); // Clear password field
-                    confirmPasswordField.setText(""); // Clear confirm password field
+                    
+                    userPasswordField.setText(""); 
+                    confirmPasswordField.setText(""); 
                     userTypeComboBox.setSelectedItem(foundUser.getRole());
                     displayArea.append("\n\nAssociated User Role: " + foundUser.getRole());
                 } else {
@@ -454,7 +453,7 @@ public class AdminPanel extends JPanel {
         String empNum = empNumField.getText().trim();
         String date = attendanceDateField.getText().trim();
 
-        if (empNum.isEmpty() || date.isEmpty() || date.contains(" ")) { // Check for incomplete mask
+        if (empNum.isEmpty() || date.isEmpty() || date.contains(" ")) { 
             JOptionPane.showMessageDialog(this, "Employee Number and a complete Date (MM/DD/YYYY) are required to search for attendance.", "Input Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -503,7 +502,7 @@ public class AdminPanel extends JPanel {
             return;
         }
 
-        // To update, we need employee's first and last name for the Attendance object
+        
         Employee employee = CSVReaderUtil.getEmployeeById(empNum);
         if (employee == null) {
             JOptionPane.showMessageDialog(this, "Employee not found. Cannot update attendance without employee details.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -527,7 +526,7 @@ public class AdminPanel extends JPanel {
                                     "Time Out: " + timeOut);
                 JOptionPane.showMessageDialog(this, "Attendance record updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                // If not found, it implies it's a new record for that day, so add it
+                
                 int confirm = JOptionPane.showConfirmDialog(this, 
                                 "No existing attendance record found for " + empNum + " on " + date + ".\n" +
                                 "Do you want to add this as a new attendance record?", 

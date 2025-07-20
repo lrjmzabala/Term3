@@ -21,10 +21,10 @@ public class PayrollCalculator {
         new SSSDeduction(),
         new PhilHealthDeduction(),
         new PagIbigDeduction(),
-        new IncomeTaxDeduction() // ✅ Optional if IncomeTax needs to store back the value
+        new IncomeTaxDeduction() 
     );
 
-    private double lastIncomeTax = 0.0; // ✅ Store last computed tax
+    private double lastIncomeTax = 0.0; 
 
     public static double calculateTotalHoursWorked(String empNum, List<Attendance> attendanceRecords, String startDate, String endDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
