@@ -1,157 +1,70 @@
 package com.mycompany.motorphpayroll;
 
-import com.mycompany.motorphpayroll.model.Person;
 import com.mycompany.motorphpayroll.model.Employee;
-import com.mycompany.motorphpayroll.util.CSVReaderUtil;
-import java.util.List; // Import List for reading all employees
+import java.io.BufferedReader; // Import this
+import java.io.FileReader;    // Import this
+import java.io.IOException;   // Import this
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Admin class responsible for managing employee records.
- */
-public class Admin extends Person {
-    // EMPLOYEE_CSV constant should ideally be in CSVReaderUtil and accessed from there.
-    // private static final String EMPLOYEE_CSV = "C:\\Users\\Papa\\Downloads\\Copy of MotorPH Employee Data - Employee Details.csv";
+public class Admin {
+    private String employeeCsvFilePath = "src/main/resources/MotorPH Employee Data.csv"; // Adjust path as needed
 
-    public Admin(String firstName, String lastName, String phoneNumber) {
-        super(firstName, lastName, phoneNumber);
-        System.out.println("Admin panel initialized.");
-        // Ensure cache is loaded when Admin starts or before first operation
-        CSVReaderUtil.loadEmployeesToCache();
-    }
+    public Map<String, Employee> loadEmployees() {
+        Map<String, Employee> employees = new HashMap<>();
+        String line;
+        String cvsSplitBy = ","; // Or whatever delimiter your CSV uses
 
-    @Override
-    public String getRoleDescription() {
-        return "Admin: " + getFullName();
-    }
+        try (BufferedReader br = new BufferedReader(new FileReader(employeeCsvFilePath))) {
+            br.readLine(); // Skip header line if present
 
-    /**
-     * Adds a new employee record to the CSV file.
-     * @param empNum Employee Number
-     * @param firstName First Name
-     * @param lastName Last Name
-     * @param birthday Birthday
-     * @param address Address
-     * @param phoneNumber Phone Number
-     * @param sssNumber SSS Number
-     * @param philHealth Philhealth Number
-     * @param tin TIN Number
-     * @param pagibig Pag-IBIG Number
-     * @param status Status
-     * @param position Position
-     * @param supervisor Supervisor
-     * @param basicSalary Basic Salary
-     * @param riceSubsidy Rice Subsidy
-     * @param phoneAllowance Phone Allowance
-     * @param clothingAllowance Clothing Allowance
-     * @param grossSemiMonthly Gross Semi-Monthly Rate
-     * @param hourlyRate Hourly Rate
-     */
-    public void addEmployee(String empNum, String firstName, String lastName,
-                            String birthday, String address, String phoneNumber,
-                            String sssNumber, String philHealth, String tin,
-                            String pagibig, String status, String position, String supervisor,
-                            double basicSalary, double riceSubsidy,
-                            double phoneAllowance, double clothingAllowance,
-                            double grossSemiMonthly, double hourlyRate) {
+            while ((line = br.readLine()) != null) { // This loop likely contains line 68
+                String[] data = line.split(cvsSplitBy);
+                // Ensure 'data' array has enough elements before accessing them
+                // Adjust indices based on your CSV structure
+                if (data.length >= 20) { // Assuming 20 fields for an Employee
+                    try {
+                        String employeeNumber = data[0].trim();
+                        String lastName = data[1].trim();
+                        String firstName = data[2].trim();
+                        String birthday = data[3].trim(); // Assuming format like MM/DD/YYYY
+                        String address = data[4].trim();
+                        String phoneNumber = data[5].trim();
+                        String sssNumber = data[6].trim();
+                        String philhealthNumber = data[7].trim();
+                        String tinNumber = data[8].trim();
+                        String pagibigNumber = data[9].trim();
+                        String status = data[10].trim();
+                        String position = data[11].trim();
+                        String supervisor = data[12].trim();
+                        double basicSalary = Double.parseDouble(data[13].trim());
+                        double riceSubsidy = Double.parseDouble(data[14].trim());
+                        double phoneAllowance = Double.parseDouble(data[15].trim());
+                        double clothingAllowance = Double.parseDouble(data[16].trim());
+                        double grossSemiMonthlyRate = Double.parseDouble(data[17].trim());
+                        double hourlyRate = Double.parseDouble(data[18].trim()); // Make sure this index is correct
 
-        // Check if employee number already exists
-        if (CSVReaderUtil.getEmployeeById(empNum) != null) {
-            System.out.println("❌ Error: Employee with ID " + empNum + " already exists. Cannot add.");
-            return;
+                        Employee employee = new Employee(employeeNumber, lastName, firstName, birthday, address,
+                                phoneNumber, sssNumber, philhealthNumber, tinNumber, pagibigNumber,
+                                status, position, supervisor, basicSalary, riceSubsidy, phoneAllowance,
+                                clothingAllowance, grossSemiMonthlyRate, hourlyRate);
+                        employees.put(employeeNumber, employee);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error parsing numeric data for employee: " + data[0] + ". Details: " + e.getMessage());
+                        // Handle error, e.g., skip this line or log it
+                    }
+                } else {
+                    System.err.println("Skipping malformed line in CSV: " + line);
+                }
+            }
+        } catch (IOException e) { // This catches the IOException
+            System.err.println("Error reading employee data file: " + e.getMessage());
+            e.printStackTrace(); // Print the stack trace for more details
+            // You might want to show a dialog to the user here
+            // JOptionPane.showMessageDialog(null, "Error loading employee data: " + e.getMessage(), "File Read Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        Employee employee = new Employee(empNum, lastName, firstName, birthday, address, phoneNumber,
-                                         sssNumber, philHealth, tin, pagibig, status,
-                                         position, supervisor, basicSalary, riceSubsidy,
-                                         phoneAllowance, clothingAllowance, grossSemiMonthly, hourlyRate);
-
-        CSVReaderUtil.addEmployeeToCSV(employee);
+        return employees;
     }
 
-    /**
-     * Retrieves the details of a specific employee as a formatted string.
-     * @param empNum The employee number.
-     * @return A formatted string of employee details, or null if not found.
-     */
-    public String getEmployeeDetails(String empNum) {
-        // Use the getEmployeeById from CSVReaderUtil for better performance (uses cache)
-        Employee emp = CSVReaderUtil.getEmployeeById(empNum);
-        if (emp != null) {
-            return emp.toString();
-        }
-        return null; // Employee not found
-    }
-
-    // --- Add the new method here ---
-    /**
-     * Retrieves a specific Employee object by employee number.
-     * This is useful for populating GUI fields.
-     * @param empNum The employee number.
-     * @return The Employee object if found, or null otherwise.
-     */
-    public Employee getEmployeeDetailsObject(String empNum) {
-        return CSVReaderUtil.getEmployeeById(empNum);
-    }
-    // --- End of new method ---
-
-    /**
-     * Updates an existing employee's record.
-     * @param empNum Employee Number of the employee to update
-     * @param firstName New First Name
-     * @param lastName New Last Name
-     * @param birthday New Birthday
-     * @param address New Address
-     * @param phoneNumber New Phone Number
-     * @param sssNumber New SSS Number
-     * @param philHealth New Philhealth Number
-     * @param tin New TIN Number
-     * @param pagibig New Pag-IBIG Number
-     * @param status New Status
-     * @param position New Position
-     * @param supervisor New Supervisor
-     * @param basicSalary New Basic Salary
-     * @param riceSubsidy New Rice Subsidy
-     * @param phoneAllowance New Phone Allowance
-     * @param clothingAllowance New Clothing Allowance
-     * @param grossSemiMonthly New Gross Semi-Monthly Rate
-     * @param hourlyRate New Hourly Rate
-     * @return true if updated successfully, false otherwise (e.g., employee not found).
-     */
-    public boolean updateEmployee(String empNum, String firstName, String lastName,
-                                  String birthday, String address, String phoneNumber,
-                                  String sssNumber, String philHealth, String tin,
-                                  String pagibig, String status, String position, String supervisor,
-                                  double basicSalary, double riceSubsidy,
-                                  double phoneAllowance, double clothingAllowance,
-                                  double grossSemiMonthly, double hourlyRate) {
-        // First, check if the employee exists
-        Employee existingEmployee = CSVReaderUtil.getEmployeeById(empNum);
-        if (existingEmployee == null) {
-            System.out.println("❌ Error: Employee with ID " + empNum + " not found for update.");
-            return false;
-        }
-
-        // Create a new Employee object with the updated details
-        Employee updatedEmployee = new Employee(empNum, lastName, firstName, birthday, address, phoneNumber,
-                                                 sssNumber, philHealth, tin, pagibig, status,
-                                                 position, supervisor, basicSalary, riceSubsidy,
-                                                 phoneAllowance, clothingAllowance, grossSemiMonthly, hourlyRate);
-
-        return CSVReaderUtil.updateEmployeeInCSV(updatedEmployee);
-    }
-
-    /**
-     * Deletes an employee record by their employee number.
-     * @param empNum The employee number of the employee to delete.
-     * @return true if deleted successfully, false otherwise.
-     */
-    public boolean deleteEmployee(String empNum) {
-        return CSVReaderUtil.deleteEmployeeFromCSV(empNum);
-    }
-
-    // Optional: Method to get all employees if needed for display purposes in Admin panel
-    public List<Employee> getAllEmployees() {
-        // CHANGED THIS LINE:
-        return CSVReaderUtil.readEmployeesFromCSV(CSVReaderUtil.getWritableEmployeeCsvPath());
-    }
+    // ... other methods in your Admin class ...
 }

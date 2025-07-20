@@ -1,71 +1,98 @@
 package com.mycompany.motorphpayroll.GUI;
 
-import com.mycompany.motorphpayroll.model.User; // Import the User class if not already
-import com.mycompany.motorphpayroll.util.CSVReaderUtil;
+import com.mycompany.motorphpayroll.model.User;
+import com.mycompany.motorphpayroll.util.CSVReaderUtil; // Keep this import
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class mainframe extends JFrame {
 
     private JTabbedPane tabbedPane;
     private JPanel adminPanel;
     private JPanel viewAllEmployeesPanel;
-    private JPanel employeeSelfServicePanel; // To be used for individual employee view
+    private JPanel employeeSelfServicePanel;
 
     public mainframe() {
         setTitle("MotorPH Payroll System");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600); // Adjust size as needed
-        setLocationRelativeTo(null); // Center the frame
+        setSize(1000, 700);
+        setLocationRelativeTo(null);
 
-        // Initialize CSV paths and load initial data before any login attempts
-        CSVReaderUtil.initializeWritableCsvPaths();
-        CSVReaderUtil.loadEmployeesToCache(); // Ensure employee data is loaded if needed globally
+        CSVReaderUtil.loadAllDataToCache();
 
-        // Create and show the Login Dialog first
         LoginDialog loginDialog = new LoginDialog(this);
         loginDialog.setVisible(true);
 
-        // After the dialog closes, check if login was successful
         if (loginDialog.isLoggedIn()) {
             String role = loginDialog.getUserRole();
-            // ⭐ CORRECTED LINE: Use the getter method
-            String loggedInUsername = loginDialog.getUsername(); 
+            String loggedInUsername = loginDialog.getUsername();
 
-            System.out.println("User logged in: " + loggedInUsername + " with role: " + role); // For debugging
+            System.out.println("User logged in: " + loggedInUsername + " with role: " + role);
 
-            // Initialize main UI components
+            setupMenuBar(); // Call the new method to set up the menu bar
+
             tabbedPane = new JTabbedPane();
             add(tabbedPane, BorderLayout.CENTER);
 
-            // Initialize panels
-            adminPanel = new AdminPanel(); // Assuming AdminPanel exists
-            viewAllEmployeesPanel = new ViewEmployeesPanel(); // Assuming ViewEmployeesPanel exists and shows all employees
+            adminPanel = new AdminPanel();
+            viewAllEmployeesPanel = new ViewEmployeesPanel();
 
-            // Add panels based on role
-            if ("Admin".equalsIgnoreCase(role)) { // Compare role (case-insensitive)
+            if ("Admin".equalsIgnoreCase(role)) {
                 tabbedPane.addTab("Admin Panel", adminPanel);
                 tabbedPane.addTab("View All Employees", viewAllEmployeesPanel);
-                // Add any other admin-specific panels
-            } else if ("Employee".equalsIgnoreCase(role)) { // For Employee role
-                // Create the EmployeePanel for the logged-in employee
-                // The username from LoginDialog is typically the employee number for employees
-                employeeSelfServicePanel = new EmployeePanel(loggedInUsername); // Pass the logged-in employee number
+            } else if ("Employee".equalsIgnoreCase(role)) {
+                employeeSelfServicePanel = new EmployeePanel(loggedInUsername);
                 tabbedPane.addTab("My Details & Salary", employeeSelfServicePanel);
             }
-            // You can add more roles/conditions as needed
 
-            // Make the mainframe visible ONLY after successful login and UI setup
             setVisible(true);
         } else {
-            // Login failed or was cancelled, exit the application
             JOptionPane.showMessageDialog(this, "Login failed or cancelled. Exiting application.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
     }
 
+    private void setupMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        // CHANGE THIS LINE: Change "File" to "Menu" or "Options"
+        JMenu appMenu = new JMenu("Menu"); // Changed from "File" to "Menu"
+
+        // Sign Out Menu Item
+        JMenuItem signOutMenuItem = new JMenuItem("Sign Out");
+        signOutMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleSignOut();
+            }
+        });
+        appMenu.add(signOutMenuItem); // Add Sign Out to the new menu
+
+        // Exit Menu Item
+        JMenuItem exitMenuItem = new JMenuItem("Exit");
+        exitMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0); // Exit the application
+            }
+        });
+        appMenu.add(exitMenuItem); // Add Exit to the new menu
+
+        menuBar.add(appMenu); // Add the new menu to the menu bar
+        setJMenuBar(menuBar); // Set this menu bar to the JFrame
+    }
+
+    private void handleSignOut() {
+        this.dispose();
+
+        SwingUtilities.invokeLater(() -> {
+            LoginDialog loginDialog = new LoginDialog(null);
+            loginDialog.setVisible(true);
+        });
+    }
+
     public static void main(String[] args) {
-        // Run the GUI on the Event Dispatch Thread (EDT)
         SwingUtilities.invokeLater(() -> {
             new mainframe();
         });

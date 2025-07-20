@@ -1,113 +1,105 @@
 package com.mycompany.motorphpayroll.model;
 
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Attendance {
-    private final String employeeNumber; // Changed back to employeeNumber as per your current error
-    private final String lastName;
-    private final String firstName;
-    private final String date;
-    private final String logIn; // Stored original String
-    private final String logOut; // Stored original String
-    private final LocalDateTime loginTime;
-    private final LocalDateTime logoutTime;
+    private String employeeNumber;
+    private String lastName;
+    private String firstName;
+    private String date; // Stored as MM/DD/YYYY string
+    private String logInTime; // Stored as h:mm:ss a string
+    private String logOutTime; // Stored as h:mm:ss a string
 
-    /**
-     * Constructor to initialize attendance details.
-     */
-    public Attendance(String employeeNumber, String lastName, String firstName, String date, String logIn, String logOut) {
-        if (employeeNumber == null || lastName == null || firstName == null || date == null || logIn == null || logOut == null ||
-            employeeNumber.isEmpty() || lastName.isEmpty() || firstName.isEmpty() || date.isEmpty() || logIn.isEmpty() || logOut.isEmpty()) {
-            throw new IllegalArgumentException("Invalid row: Missing required fields for employee " + employeeNumber);
-        }
-
+    public Attendance(String employeeNumber, String lastName, String firstName, String date, String logInTime, String logOutTime) {
         this.employeeNumber = employeeNumber;
         this.lastName = lastName;
         this.firstName = firstName;
         this.date = date;
-        this.logIn = logIn;
-        this.logOut = logOut;
+        this.logInTime = logInTime;
+        this.logOutTime = logOutTime;
+    }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a");
+    // Getters
+    public String getEmployeeNumber() { return employeeNumber; }
+    public String getLastName() { return lastName; }
+    public String getFirstName() { return firstName; }
+    public String getDate() { return date; }
+    public String getLogInTime() { return logInTime; }
+    public String getLogOutTime() { return logOutTime; }
+
+    // Setters (important for updating records)
+    public void setLogInTime(String logInTime) { this.logInTime = logInTime; }
+    public void setLogOutTime(String logOutTime) { this.logOutTime = logOutTime; }
+
+    /**
+     * Calculates the total hours worked for this attendance record.
+     * Assumes logInTime and logOutTime are in "h:mm:ss a" format.
+     * Returns 0.0 if either time is missing or cannot be parsed.
+     * Accounts for lunch break (1 hour) if both times are present and duration > 4 hours.
+     *
+     * @return Total hours worked (double), or 0.0 if calculation is not possible.
+     */
+    public double getTotalWorkedHours() {
+        if (logInTime == null || logInTime.isEmpty() || logOutTime == null || logOutTime.isEmpty()) {
+            return 0.0; // Cannot calculate if times are missing
+        }
 
         try {
-            this.loginTime = LocalDateTime.parse(date + " " + logIn, formatter);
-            this.logoutTime = LocalDateTime.parse(date + " " + logOut, formatter);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid date or time format for employee " + employeeNumber + " (Date: " + date + ", Login: " + logIn + ", Logout: " + logOut + ")", e);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a");
+            LocalTime inTime = LocalTime.parse(logInTime, timeFormatter);
+            LocalTime outTime = LocalTime.parse(logOutTime, timeFormatter);
+
+            // Calculate duration
+            Duration duration = Duration.between(inTime, outTime);
+            double hours = duration.toMinutes() / 60.0;
+
+            // Assuming a standard 1-hour lunch break if working more than 4 hours
+            if (hours > 4.0) {
+                hours -= 1.0;
+            }
+
+            // Ensure hours are not negative
+            return Math.max(0.0, hours);
+
+        } catch (DateTimeParseException e) {
+            System.err.println("Error parsing time for employee " + employeeNumber + " on " + date + ": " + e.getMessage());
+            return 0.0;
         }
     }
 
-    // --- Essential Getters that were causing "cannot find symbol" errors ---
-
     /**
-     * Getter method for employee number.
-     * This method is named getEmployeeNumber() to match your current errors.
+     * Checks if this attendance record's date falls within a given date range.
+     * @param startDateStr The start date string (MM/DD/YYYY).
+     * @param endDateStr The end date string (MM/DD/YYYY).
+     * @return true if the attendance date is within the range (inclusive), false otherwise.
      */
-    public String getEmployeeNumber() {
-        return employeeNumber;
+    public boolean isWithinDateRange(String startDateStr, String endDateStr) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+            LocalDate attendanceDate = LocalDate.parse(this.date, formatter);
+            LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+            LocalDate endDate = LocalDate.parse(endDateStr, formatter);
+
+            return !attendanceDate.isBefore(startDate) && !attendanceDate.isAfter(endDate);
+        } catch (DateTimeParseException e) {
+            System.err.println("Error parsing date in Attendance.isWithinDateRange: " + e.getMessage());
+            return false;
+        }
     }
 
-    /**
-     * Getter method for date.
-     * This was missing in the current error.
-     */
-    public String getDate() {
-        return date;
+    @Override
+    public String toString() {
+        return "Attendance{" +
+               "employeeNumber='" + employeeNumber + '\'' +
+               ", lastName='" + lastName + '\'' +
+               ", firstName='" + firstName + '\'' +
+               ", date='" + date + '\'' +
+               ", logInTime='" + logInTime + '\'' +
+               ", logOutTime='" + logOutTime + '\'' +
+               '}';
     }
-
-    /**
-     * Getter method for original login time string.
-     * This was added in previous steps.
-     */
-    public String getLogIn() {
-        return logIn;
-    }
-
-    /**
-     * Getter method for original logout time string.
-     * This was added in previous steps.
-     */
-    public String getLogOut() {
-        return logOut;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    // --- Methods for calculations/logic that were causing errors ---
-
-    /**
-     * Method to check if attendance falls within the given date range.
-     * This was missing in the current error.
-     */
-    public boolean isWithinDateRange(String startDate, String endDate) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
-
-        LocalDate start = LocalDate.parse(startDate, formatter);
-        LocalDate end = LocalDate.parse(endDate, formatter);
-        LocalDate attendanceDate = LocalDate.parse(this.date, formatter);
-
-        // Returns true if attendance date is between start and end (inclusive)
-        return !attendanceDate.isBefore(start) && !attendanceDate.isAfter(end);
-    }
-
-    /**
-     * Calculates total hours worked.
-     * This method expects no arguments, as in your previous correct version.
-     */
-    public double getTotalWorkedHours() {
-        Duration duration = Duration.between(loginTime, logoutTime);
-        return duration.toMinutes() / 60.0;
-    }
-
-    // You might also have other methods here, but these are the ones relevant to the current errors.
 }

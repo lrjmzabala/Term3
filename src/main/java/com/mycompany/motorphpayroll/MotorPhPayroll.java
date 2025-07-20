@@ -32,7 +32,7 @@ public class MotorPhPayroll {
     }
 
     private static void adminMenu(Scanner scanner) {
-        Admin admin = new Admin("System", "Admin", "N/A");  // Initialize Admin instance
+        Admin admin = new Admin();
 
         while (true) {
             System.out.println("\nAdmin Panel:");

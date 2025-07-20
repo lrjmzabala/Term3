@@ -11,26 +11,32 @@ import java.time.format.DateTimeFormatter;
 import java.net.URL; // Added for resource loading
 
 public class CSVReaderUtil {
-    // FIX: These paths now match the renamed filenames in your 'resources' folder.
-    public static final String EMPLOYEE_CSV_RESOURCE = "/employee_details.csv"; // CHANGED THIS LINE
-    public static final String ATTENDANCE_CSV_RESOURCE = "/attendance_records.csv"; // CHANGED THIS LINE
-    public static final String LOGIN_CREDENTIALS_CSV_RESOURCE = "/Login Credentials.csv";
+    public static final String EMPLOYEE_CSV_RESOURCE = "/employee_details.csv";
+    public static final String ATTENDANCE_CSV_RESOURCE = "/attendance_records.csv";
+    public static final String LOGIN_CREDENTIALS_CSV_RESOURCE = "/Login Credentials.csv"; // Your original name
 
     private static final Map<String, Employee> employeeCache = new HashMap<>();
+    // ADDED: Cache for users
+    private static final Map<String, User> userCache = new HashMap<>();
+    private static final Map<String, List<Attendance>> attendanceCache = new HashMap<>(); // Cache for attendance records, by employee ID
+
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a");
 
     private static String writableEmployeeCsvPath;
     private static String writableAttendanceCsvPath;
-    private static String writableLoginCredentialsCsvPath;
+    private static String writableLoginCredentialsCsvPath; // Path for the writable user file
 
+    // Static initializer block: This code runs once when the class is loaded.
+    // It's crucial for setting up file paths and loading initial data.
     static {
-        initializeWritableCsvPaths();
-        loadEmployeesToCache(); // Load employees from the writable path
+        initializeWritableCsvPaths(); // Set up paths and copy resources if needed
+        loadAllDataToCache(); // Load all data into caches
     }
 
+    // This method sets up the writable paths and copies initial CSVs from resources
     public static void initializeWritableCsvPaths() {
         String userHome = System.getProperty("user.home");
-        String appDir = userHome + File.separator + ".motorphpayroll"; // Hidden directory in user's home
+        String appDir = userHome + File.separator + ".motorphpayroll";
 
         File appDirFile = new File(appDir);
         if (!appDirFile.exists()) {
@@ -39,12 +45,12 @@ public class CSVReaderUtil {
 
         writableEmployeeCsvPath = appDir + File.separator + "employee_details.csv";
         writableAttendanceCsvPath = appDir + File.separator + "attendance_records.csv";
-        writableLoginCredentialsCsvPath = appDir + File.separator + "login_credentials.csv";
+        writableLoginCredentialsCsvPath = appDir + File.separator + "login_credentials.csv"; // Use a standardized name for the writable copy
 
         // Copy resources to writable paths if they don't exist
         copyResourceToFile(EMPLOYEE_CSV_RESOURCE, writableEmployeeCsvPath);
         copyResourceToFile(ATTENDANCE_CSV_RESOURCE, writableAttendanceCsvPath);
-        copyResourceToFile(LOGIN_CREDENTIALS_CSV_RESOURCE, writableLoginCredentialsCsvPath);
+        copyResourceToFile(LOGIN_CREDENTIALS_CSV_RESOURCE, writableLoginCredentialsCsvPath); // Use the correct source for login credentials
     }
 
     private static void copyResourceToFile(String resourcePath, String filePath) {
@@ -71,42 +77,125 @@ public class CSVReaderUtil {
     }
 
     /**
-     * Reads user credentials from the "Login Credentials.csv" file.
-     * The CSV is expected to have the format: username,password,role
-     * Skips the first line assuming it's a header.
-     *
-     * @return A Map where the key is the username and the value is a User object.
-     * @throws IOException If an I/O error occurs while reading the file.
+     * Consolidates all data loading into a single method.
+     * This should be called at application start or when data needs refreshing.
      */
-    public static Map<String, User> readUsersFromLoginCSV() throws IOException {
-        Map<String, User> userMap = new HashMap<>();
-        // Use the writable path for reading login credentials
+    // ADDED: New method to load all data
+    public static void loadAllDataToCache() {
+        System.out.println("🔄 Loading all data to caches...");
+        loadEmployeesToCache(); // Populates employeeCache
+        loadUsersToCache();     // Populates userCache
+        loadAttendanceToCache(); // Populates attendanceCache
+        System.out.println("✅ All data loaded to caches.");
+    }
+
+    // MODIFIED: This method now populates the userCache
+    public static void loadUsersToCache() {
+        userCache.clear(); // Clear existing cache before reloading
         try (BufferedReader reader = new BufferedReader(new FileReader(writableLoginCredentialsCsvPath))) {
             String line;
-            boolean firstLine = true; // Flag to skip the header line
+            boolean firstLine = true; // Flag to skip header row
 
             while ((line = reader.readLine()) != null) {
                 if (firstLine) {
-                    firstLine = false; // Skip the header row
-                    continue;
+                    firstLine = false;
+                    continue; // Skip the header row
                 }
 
-                String[] parts = line.split(",");
-                // Expecting 3 parts: username, password, role
-                if (parts.length == 3) {
+                String[] parts = splitCSVLine(line); // Use the existing robust splitCSVLine
+                if (parts.length >= 3) { // Ensure enough columns for Username, Password, Role
                     String username = parts[0].trim();
                     String password = parts[1].trim();
                     String role = parts[2].trim();
-                    userMap.put(username, new User(username, password, role));
+                    userCache.put(username, new User(username, password, role));
                 } else {
-                    System.err.println("Warning: Skipping malformed line in Login Credentials.csv: " + line);
+                    System.err.println("Warning: Skipping malformed line in login_credentials.csv: " + line);
                 }
             }
+            System.out.println("Loaded " + userCache.size() + " user credentials into cache.");
         } catch (FileNotFoundException e) {
-            System.err.println("❌ Login Credentials file not found at " + writableLoginCredentialsCsvPath + ". An empty map will be returned. Error: " + e.getMessage());
-            throw e; // Re-throw to inform the caller (LoginDialog)
+            System.err.println("❌ Login Credentials file not found at " + writableLoginCredentialsCsvPath + ". User cache will be empty. Error: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("❌ Error reading login credentials file: " + e.getMessage());
         }
-        return userMap;
+    }
+
+    // ADDED: New method to get user by username from cache
+    public static Optional<User> getUserByUsername(String username) {
+        // Ensure cache is populated, although static block should handle it
+        if (userCache.isEmpty() && new File(writableLoginCredentialsCsvPath).exists()) {
+             // Only attempt to reload if cache is empty and file exists
+             loadUsersToCache();
+        }
+        return Optional.ofNullable(userCache.get(username));
+    }
+
+    // Method to read users directly from CSV (if needed for AdminPanel, but generally use cache)
+    // Kept for backward compatibility if other parts of the app rely on it returning a Map
+    public static Map<String, User> readUsersFromLoginCSV() throws IOException {
+        // This method will now simply return a copy of the userCache
+        // or reload if necessary for specific use cases (e.g., if you only modify this file directly)
+        loadUsersToCache(); // Ensure cache is up-to-date
+        return new HashMap<>(userCache);
+    }
+
+    public static void addUserToLoginCSV(User user) throws IOException {
+        try (FileWriter writer = new FileWriter(writableLoginCredentialsCsvPath, true); // true for append mode
+             PrintWriter out = new PrintWriter(writer)) {
+            String csvLine = String.join(",",
+                escapeCSV(user.getUsername()),
+                escapeCSV(user.getPassword()),
+                escapeCSV(user.getRole())
+            );
+            out.println(csvLine);
+            System.out.println("✅ User added successfully to login credentials: " + user.getUsername());
+            loadUsersToCache(); // Reload cache after modifying file
+        } catch (IOException e) {
+            System.err.println("❌ Error writing user to login credentials file: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public static boolean updateUserInLoginCSV(User updatedUser) throws IOException {
+        // Retrieve users from the current cache for modification
+        List<User> allUsers = new ArrayList<>(userCache.values());
+        boolean found = false;
+
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (allUsers.get(i).getUsername().equals(updatedUser.getUsername())) {
+                allUsers.set(i, updatedUser); // Replace the old user with the updated one
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            writeAllUsersToLoginCSV(allUsers, writableLoginCredentialsCsvPath);
+            System.out.println("✅ User updated successfully in login credentials: " + updatedUser.getUsername());
+            loadUsersToCache(); // Reload cache after modifying file
+        } else {
+            System.out.println("❌ User " + updatedUser.getUsername() + " not found for update.");
+        }
+        return found;
+    }
+
+    public static void writeAllUsersToLoginCSV(List<User> users, String filePath) throws IOException {
+        try (FileWriter writer = new FileWriter(filePath, false); // false for overwrite mode
+             PrintWriter out = new PrintWriter(writer)) {
+            out.println("Username,Password,Role"); // Write header
+            for (User user : users) {
+                String csvLine = String.join(",",
+                    escapeCSV(user.getUsername()),
+                    escapeCSV(user.getPassword()),
+                    escapeCSV(user.getRole())
+                );
+                out.println(csvLine);
+            }
+            System.out.println("Login credentials CSV file overwritten successfully at: " + filePath);
+        } catch (IOException e) {
+            System.err.println("❌ Error writing all users to login credentials file " + filePath + ": " + e.getMessage());
+            throw e;
+        }
     }
 
     public static String getWritableEmployeeCsvPath() {
@@ -120,30 +209,94 @@ public class CSVReaderUtil {
         return writableLoginCredentialsCsvPath;
     }
 
-
     public static void loadEmployeesToCache() {
-        employeeCache.clear(); // Clear cache before reloading
-        // Load from the writable path now
+        employeeCache.clear();
         List<Employee> employees = readEmployeesFromCSV(writableEmployeeCsvPath);
         for (Employee emp : employees) {
             employeeCache.put(emp.getEmployeeNumber(), emp);
         }
+        System.out.println("Loaded " + employeeCache.size() + " employees into cache.");
     }
 
+    // MODIFIED: This method now also populates the attendanceCache
+    public static void loadAttendanceToCache() {
+        attendanceCache.clear(); // Clear existing cache before reloading
+        List<Attendance> allAttendance = readAttendanceFromCSV(writableAttendanceCsvPath);
+        for (Attendance att : allAttendance) {
+            attendanceCache.computeIfAbsent(att.getEmployeeNumber(), k -> new ArrayList<>()).add(att);
+        }
+        System.out.println("Loaded " + allAttendance.size() + " attendance records into cache for " + attendanceCache.size() + " employees.");
+    }
+
+    // MODIFIED: This method now gets from attendanceCache first
+    public static List<Attendance> getAllAttendanceRecords() {
+        // Return a new list containing all values from the attendance cache
+        List<Attendance> allRecords = new ArrayList<>();
+        attendanceCache.values().forEach(allRecords::addAll);
+        return allRecords;
+    }
+
+    // MODIFIED: This method now gets from attendanceCache first
+    public static Attendance getAttendanceRecord(String employeeNumber, String date) {
+        List<Attendance> employeeAttendance = attendanceCache.get(employeeNumber);
+        if (employeeAttendance != null) {
+            for (Attendance att : employeeAttendance) {
+                if (att.getDate().equals(date)) {
+                    return att;
+                }
+            }
+        }
+        // If not found in cache, fallback to reading file (though ideally, cache should be definitive)
+        return getAttendanceRecordFromFile(employeeNumber, date);
+    }
+
+    // ADDED: Private helper to read single attendance record from file (fallback)
+    private static Attendance getAttendanceRecordFromFile(String employeeNumber, String date) {
+        try (BufferedReader br = new BufferedReader(new FileReader(writableAttendanceCsvPath))) {
+            String line;
+            br.readLine(); // Skip header
+
+            while ((line = br.readLine()) != null) {
+                String[] values = splitCSVLine(line);
+                if (values.length >= 6) {
+                    String currentEmpId = values[0].trim();
+                    String currentDate = values[3].trim(); // Date is at index 3
+
+                    if (currentEmpId.equals(employeeNumber) && currentDate.equals(date)) {
+                        String lastname = values[1].trim();
+                        String firstname = values[2].trim();
+                        String logIn = values[4].trim();
+                        String logOut = values[5].trim();
+                        return new Attendance(employeeNumber, lastname, firstname, date, logIn, logOut);
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("❌ Attendance file not found at " + writableAttendanceCsvPath + ": " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("❌ Error reading attendance file: " + e.getMessage());
+        }
+        return null; // No record found
+    }
+
+
     public static Employee getEmployeeById(String employeeId) {
-        // Always try to get from cache first (which is loaded from writable path)
+        // Try to get from cache first
         Employee emp = employeeCache.get(employeeId);
         if (emp != null) {
             return emp;
         } else {
-            // Fallback: If not in cache, it might mean the cache is stale or not fully loaded
-            // In a robust app, ensure loadEmployeesToCache() is called when data might change.
-            // For now, let's re-read from the writable CSV.
-            return getEmployeeById(employeeId, writableEmployeeCsvPath);
+            // If not in cache, fallback to reading from file, then add to cache
+            emp = getEmployeeByIdFromFile(employeeId, writableEmployeeCsvPath);
+            if (emp != null) {
+                employeeCache.put(emp.getEmployeeNumber(), emp); // Add to cache for future access
+            }
+            return emp;
         }
     }
 
-    public static Employee getEmployeeById(String employeeId, String filePath) {
+    // ADDED: Private helper to read single employee from file (fallback)
+    private static Employee getEmployeeByIdFromFile(String employeeId, String filePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             br.readLine(); // Skip header
@@ -165,10 +318,10 @@ public class CSVReaderUtil {
         } catch (IOException e) {
             System.err.println("Error reading employee file at " + filePath + ": " + e.getMessage());
         }
-
         System.out.println("No match found for Employee ID: " + employeeId + " in " + filePath);
         return null;
     }
+
 
     private static double parseDoubleSafely(String value) {
         try {
@@ -180,12 +333,6 @@ public class CSVReaderUtil {
         }
     }
 
-    /**
-     * Reads all employees from the CSV file and stores them in a list.
-     *
-     * @param filePath The path to the employee CSV file (now refers to the writable path).
-     * @return A list of Employee objects parsed from the file.
-     */
     public static List<Employee> readEmployeesFromCSV(String filePath) {
         System.out.println("✅ Checking employee file path: " + filePath);
         System.out.println("📂 Loading employee data...");
@@ -291,13 +438,8 @@ public class CSVReaderUtil {
         return result.toArray(new String[0]);
     }
 
-    /**
-     * Adds a new employee to the CSV file.
-     * This appends the new employee.
-     * @param employee The Employee object to add.
-     */
-    public static void addEmployeeToCSV(Employee employee) {
-        try (FileWriter writer = new FileWriter(writableEmployeeCsvPath, true); // true for append mode
+    public static void addEmployeeToCSV(Employee employee) throws IOException { // Add throws IOException
+        try (FileWriter writer = new FileWriter(writableEmployeeCsvPath, true);
              PrintWriter out = new PrintWriter(writer)) {
 
             String csvLine = String.join(",",
@@ -324,20 +466,15 @@ public class CSVReaderUtil {
             out.println(csvLine);
 
             System.out.println("✅ Employee added successfully to CSV: " + employee.getFullName());
-            loadEmployeesToCache(); // Refresh cache after adding
+            loadEmployeesToCache(); // Reload cache after modifying file
         } catch (IOException e) {
             System.err.println("❌ Error writing to employee file: " + e.getMessage());
+            throw e; // Re-throw to inform the caller (AdminPanel)
         }
     }
 
-    /**
-     * Updates an existing employee's record in the CSV file.
-     * This requires rewriting the entire file.
-     * @param updatedEmployee The Employee object with updated details.
-     * @return true if updated successfully, false otherwise.
-     */
     public static boolean updateEmployeeInCSV(Employee updatedEmployee) {
-        List<Employee> allEmployees = readEmployeesFromCSV(writableEmployeeCsvPath);
+        List<Employee> allEmployees = readEmployeesFromCSV(writableEmployeeCsvPath); // Reads from file for update logic
         boolean found = false;
 
         for (int i = 0; i < allEmployees.size(); i++) {
@@ -349,43 +486,32 @@ public class CSVReaderUtil {
         }
 
         if (found) {
-            writeAllEmployeesToCSV(allEmployees, writableEmployeeCsvPath); // Pass writable path
+            writeAllEmployeesToCSV(allEmployees, writableEmployeeCsvPath);
             System.out.println("✅ Employee updated successfully in CSV: " + updatedEmployee.getFullName());
-            loadEmployeesToCache(); // Refresh cache after updating
+            loadEmployeesToCache(); // Reload cache after modifying file
         } else {
             System.out.println("❌ Employee with ID " + updatedEmployee.getEmployeeNumber() + " not found for update.");
         }
         return found;
     }
 
-    /**
-     * Deletes an employee's record from the CSV file.
-     * This requires rewriting the entire file excluding the deleted employee.
-     * @param employeeNumber The employee number of the employee to delete.
-     * @return true if employee was found and deleted, false otherwise.
-     */
     public static boolean deleteEmployeeFromCSV(String employeeNumber) {
         List<Employee> allEmployees = readEmployeesFromCSV(writableEmployeeCsvPath);
         boolean removed = allEmployees.removeIf(emp -> emp.getEmployeeNumber().equals(employeeNumber));
 
         if (removed) {
-            writeAllEmployeesToCSV(allEmployees, writableEmployeeCsvPath); // Pass writable path
+            writeAllEmployeesToCSV(allEmployees, writableEmployeeCsvPath);
             System.out.println("✅ Employee with ID " + employeeNumber + " deleted successfully from CSV.");
-            loadEmployeesToCache(); // Refresh cache after deleting
+            loadEmployeesToCache(); // Reload cache after modifying file
         } else {
             System.out.println("❌ Employee with ID " + employeeNumber + " not found for deletion.");
+            // No need for (new Date()).toLocaleString(); here, it's out of place
         }
         return removed;
     }
 
-    /**
-     * Helper method to write a list of employees back to the CSV file.
-     * This overwrites the existing file.
-     * @param employees The list of employees to write.
-     * @param filePath The path to write to (now dynamic).
-     */
     private static void writeAllEmployeesToCSV(List<Employee> employees, String filePath) {
-        try (FileWriter writer = new FileWriter(filePath, false); // false for overwrite mode
+        try (FileWriter writer = new FileWriter(filePath, false);
              PrintWriter out = new PrintWriter(writer)) {
 
             out.println("Employee #,Last Name,First Name,Birthday,Address,Phone Number,SSS #,Philhealth #,TIN #,Pag-IBIG #,Status,Position,Supervisor,Basic Salary,Rice Subsidy,Phone Allowance,Clothing Allowance,Gross Semi-monthly Rate,Hourly Rate");
@@ -431,7 +557,72 @@ public class CSVReaderUtil {
         return escapedValue;
     }
 
-    public static List<Attendance> getAllAttendanceRecords() {
-        return readAttendanceFromCSV(writableAttendanceCsvPath);
+    public static void addAttendanceToCSV(Attendance attendance) throws IOException {
+        try (FileWriter writer = new FileWriter(writableAttendanceCsvPath, true);
+             PrintWriter out = new PrintWriter(writer)) {
+
+            String csvLine = String.join(",",
+                attendance.getEmployeeNumber(),
+                escapeCSV(attendance.getLastName()),
+                escapeCSV(attendance.getFirstName()),
+                escapeCSV(attendance.getDate()),
+                escapeCSV(attendance.getLogInTime()),
+                escapeCSV(attendance.getLogOutTime())
+            );
+            out.println(csvLine);
+            System.out.println("✅ Attendance record added: " + attendance.getEmployeeNumber() + " on " + attendance.getDate());
+            loadAttendanceToCache(); // Reload cache after modifying file
+        } catch (IOException e) {
+            System.err.println("❌ Error writing new attendance record to file: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public static boolean updateAttendanceInCSV(Attendance updatedAttendance) throws IOException {
+        List<Attendance> allAttendance = readAttendanceFromCSV(writableAttendanceCsvPath); // Reads from file for update logic
+        boolean found = false;
+
+        for (int i = 0; i < allAttendance.size(); i++) {
+            Attendance existingAttendance = allAttendance.get(i);
+            if (existingAttendance.getEmployeeNumber().equals(updatedAttendance.getEmployeeNumber()) &&
+                existingAttendance.getDate().equals(updatedAttendance.getDate())) {
+                allAttendance.set(i, updatedAttendance);
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            writeAllAttendanceToCSV(allAttendance, writableAttendanceCsvPath);
+            System.out.println("✅ Attendance record updated: " + updatedAttendance.getEmployeeNumber() + " on " + updatedAttendance.getDate());
+            loadAttendanceToCache(); // Reload cache after modifying file
+        } else {
+            System.out.println("❌ Attendance record for employee " + updatedAttendance.getEmployeeNumber() + " on " + updatedAttendance.getDate() + " not found for update.");
+        }
+        return found;
+    }
+
+    private static void writeAllAttendanceToCSV(List<Attendance> attendanceList, String filePath) throws IOException {
+        try (FileWriter writer = new FileWriter(filePath, false);
+             PrintWriter out = new PrintWriter(writer)) {
+
+            out.println("Employee #,Last Name,First Name,Date,Time In,Time Out");
+
+            for (Attendance att : attendanceList) {
+                String csvLine = String.join(",",
+                    att.getEmployeeNumber(),
+                    escapeCSV(att.getLastName()),
+                    escapeCSV(att.getFirstName()),
+                    escapeCSV(att.getDate()),
+                    escapeCSV(att.getLogInTime()),
+                    escapeCSV(att.getLogOutTime())
+                );
+                out.println(csvLine);
+            }
+            System.out.println("Attendance CSV file overwritten successfully at: " + filePath);
+        } catch (IOException e) {
+            System.err.println("❌ Error writing all attendance records to file " + filePath + ": " + e.getMessage());
+            throw e;
+        }
     }
 }
