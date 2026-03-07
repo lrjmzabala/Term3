@@ -8,7 +8,6 @@ import com.mycompany.motorphpayroll.model.*;
 import com.mycompany.motorphpayroll.GUI.SupervisorPanel;
 import javax.swing.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MotorPhPayroll {
     private static final EmployeeDAO employeeDAO = new EmployeeDAO();
@@ -35,25 +34,33 @@ public class MotorPhPayroll {
 
     private static void adminMenu(Scanner scanner) {
         System.out.print("Enter ID: ");
-        Employee emp = employeeDAO.getEmployeeById(scanner.nextLine());
+        String empId = scanner.nextLine();
+        Employee emp = employeeDAO.getEmployeeById(empId);
         
-        if (!securityService.isHR(emp)) {
-            System.out.println("❌ Access Denied: HR Only.");
+        if (emp == null) {
+            System.out.println("⚠ Employee not found.");
+            return;
+        }
+
+        // PASS THE EMPLOYEE OBJECT, NOT THE ID STRING
+        if (!securityService.canAccessAdmin(emp)) {
+            System.out.println("❌ Access Denied: HR/Admin Only.");
             return;
         }
         System.out.println("✅ Welcome, HR Admin.");
-        // Add menu logic here...
     }
 
-    private static void handleSalaryCalculation(Scanner scanner, Employee employee, String empNum) {
-        // Business logic delegated to service layer
+    private static void handleSalaryCalculation(Scanner scanner, Employee employee) {
         List<Attendance> attendance = CSVReaderUtil.readAttendanceFromCSV("src/main/resources/MotorPH Attendance Data.csv");
+        
         System.out.print("Enter Start Date (MM/DD/YYYY): ");
         String start = scanner.nextLine();
         System.out.print("Enter End Date (MM/DD/YYYY): ");
         String end = scanner.nextLine();
 
+        // Pass the object 'employee'
         double salary = payrollService.computeNetSalary(employee, attendance, start, end);
+        
         System.out.println("\n💰 Net Salary: PHP " + String.format("%,.2f", salary));
     }
 
@@ -65,14 +72,15 @@ public class MotorPhPayroll {
             frame.setVisible(true);
         });
     }
+
     private static void employeeMenu(Scanner scanner) {
-    System.out.print("\nEnter your Employee Number: ");
-    String empNum = scanner.nextLine();
-    Employee employee = employeeDAO.getEmployeeById(empNum);
-    if (employee == null) {
-        System.out.println("⚠ Employee not found.");
-        return;
+        System.out.print("\nEnter your Employee Number: ");
+        String empNum = scanner.nextLine();
+        Employee employee = employeeDAO.getEmployeeById(empNum);
+        if (employee == null) {
+            System.out.println("⚠ Employee not found.");
+            return;
+        }
+        // If you need to calculate salary here, call handleSalaryCalculation(scanner, employee);
     }
-    // ... your logic here
-}
 }

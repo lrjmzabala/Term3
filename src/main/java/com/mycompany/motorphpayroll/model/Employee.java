@@ -7,6 +7,11 @@ public class Employee {
     public Employee(String employeeNumber, String lastName, String firstName, String birthday, String address, String phoneNumber, String sssNumber, String philhealthNumber, String tinNumber, String pagibigNumber, String status, String position, String supervisor, double basicSalary, double riceSubsidy, double phoneAllowance, double clothingAllowance, double grossSemiMonthlyRate, double hourlyRate) {
         this.employeeNumber = employeeNumber; this.lastName = lastName; this.firstName = firstName; this.birthday = birthday; this.address = address; this.phoneNumber = phoneNumber; this.sssNumber = sssNumber; this.philhealthNumber = philhealthNumber; this.tinNumber = tinNumber; this.pagibigNumber = pagibigNumber; this.status = status; this.position = position; this.supervisor = supervisor; this.basicSalary = basicSalary; this.riceSubsidy = riceSubsidy; this.phoneAllowance = phoneAllowance; this.clothingAllowance = clothingAllowance; this.grossSemiMonthlyRate = grossSemiMonthlyRate; this.hourlyRate = hourlyRate;
     }
+    private String immediateSupervisor; // Ensure this field exists
+
+public String getImmediateSupervisor() {
+    return immediateSupervisor;
+}
 
     // Getters
     public String getEmployeeNumber() { return employeeNumber; }

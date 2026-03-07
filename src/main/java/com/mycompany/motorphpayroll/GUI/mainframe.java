@@ -1,72 +1,58 @@
 package com.mycompany.motorphpayroll.GUI;
 
-import com.mycompany.motorphpayroll.model.User;
+import com.mycompany.motorphpayroll.DAO.EmployeeDAO; // Ensure this is imported
+import com.mycompany.motorphpayroll.model.Employee;  // Ensure this is imported
+import com.mycompany.motorphpayroll.service.SecurityService;
 import com.mycompany.motorphpayroll.util.CSVReaderUtil;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class mainframe extends JFrame {
 
+    private final SecurityService securityService = new SecurityService();
+    private final EmployeeDAO employeeDAO = new EmployeeDAO(); // Added to fetch employee objects
     private JTabbedPane tabbedPane;
-    private JPanel adminPanel;
-    private JPanel viewAllEmployeesPanel;
-    private JPanel employeeSelfServicePanel;
-    private JPanel supervisorPanel; // ✅ New panel for Supervisor
 
     public mainframe() {
         setTitle("MotorPH Payroll System");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1000, 700);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(new Color(135, 206, 235));
 
-        Color backgroundColor = new Color(135, 206, 235); // Sky Blue
-        getContentPane().setBackground(backgroundColor);
-
-        // Ensure data is loaded
         CSVReaderUtil.loadEmployeesToCache();
 
         LoginDialog loginDialog = new LoginDialog(this);
         loginDialog.setVisible(true);
 
         if (loginDialog.isLoggedIn()) {
-            String role = loginDialog.getUserRole();
-            String loggedInUsername = loginDialog.getUsername();
+            String username = loginDialog.getUsername();
+            // Fetch the actual employee object based on the username/ID
+            Employee loggedInUser = employeeDAO.getEmployeeById(username);
+            List<Employee> allEmployees = new ArrayList<>(employeeDAO.getAllEmployees().values());
 
             setupMenuBar();
-
             tabbedPane = new JTabbedPane();
-            add(tabbedPane, BorderLayout.CENTER);
+            
+            // Add Self-Service for all
+            tabbedPane.addTab("My Details & Salary", new EmployeePanel(username));
 
-            // --- ROLE-BASED TAB CONFIGURATION ---
-            
-            // 1. ADMIN ROLE: Full access to management tools
-            if ("Admin".equalsIgnoreCase(role)) {
-                adminPanel = new AdminPanel();
-                viewAllEmployeesPanel = new ViewEmployeesPanel();
-                tabbedPane.addTab("Admin Panel", adminPanel);
-                tabbedPane.addTab("View All Employees", viewAllEmployeesPanel);
-            } 
-            
-            // 2. SUPERVISOR ROLE: Self-service + Leave Approval Portal
-            else if ("Supervisor".equalsIgnoreCase(role)) {
-                employeeSelfServicePanel = new EmployeePanel(loggedInUsername);
-                supervisorPanel = new SupervisorPanel(); // ✅ The panel with "Approve Leave"
-                
-                tabbedPane.addTab("My Details & Salary", employeeSelfServicePanel);
-                tabbedPane.addTab("Supervisor Portal (Leave Approvals)", supervisorPanel);
-            } 
-            
-            // 3. REGULAR EMPLOYEE: Only their own details
-            else if ("Employee".equalsIgnoreCase(role)) {
-                employeeSelfServicePanel = new EmployeePanel(loggedInUsername);
-                tabbedPane.addTab("My Details & Salary", employeeSelfServicePanel);
+            // Role-Based Tabs using the Employee object
+            if (securityService.canAccessAdmin(loggedInUser)) {
+                tabbedPane.addTab("Admin Panel", new AdminPanel());
+                tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
             }
 
+            // Supervisor check using the full list to detect hierarchy
+            if (securityService.isSupervisor(loggedInUser, allEmployees)) {
+                tabbedPane.addTab("Supervisor Portal", new SupervisorPanel());
+            }
+
+            add(tabbedPane, BorderLayout.CENTER);
             setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(this, "Login failed or cancelled. Exiting application.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
     }
@@ -74,26 +60,11 @@ public class mainframe extends JFrame {
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu appMenu = new JMenu("Menu");
-
-        JMenuItem signOutMenuItem = new JMenuItem("Sign Out");
-        signOutMenuItem.addActionListener(e -> handleSignOut());
-        
-        JMenuItem exitMenuItem = new JMenuItem("Exit");
-        exitMenuItem.addActionListener(e -> System.exit(0));
-
-        appMenu.add(signOutMenuItem);
-        appMenu.addSeparator(); // Visually cleaner
-        appMenu.add(exitMenuItem);
-
+        JMenuItem signOut = new JMenuItem("Sign Out");
+        signOut.addActionListener(e -> { dispose(); SwingUtilities.invokeLater(mainframe::new); });
+        appMenu.add(signOut);
         menuBar.add(appMenu);
         setJMenuBar(menuBar);
-    }
-
-    private void handleSignOut() {
-        this.dispose();
-        SwingUtilities.invokeLater(() -> {
-            new mainframe(); // Re-launch the mainframe which triggers LoginDialog
-        });
     }
 
     public static void main(String[] args) {
