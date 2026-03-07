@@ -211,7 +211,5 @@ public class EmployeePanel extends JPanel {
     }
 
     private void recordAttendance(String type) {
-        // ... (Keep your existing recordAttendance logic here) ...
-        // It's already working well based on your previous code!
     }
 }

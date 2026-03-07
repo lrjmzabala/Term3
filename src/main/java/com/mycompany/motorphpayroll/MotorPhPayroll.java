@@ -42,7 +42,6 @@ public class MotorPhPayroll {
             return;
         }
 
-        // PASS THE EMPLOYEE OBJECT, NOT THE ID STRING
         if (!securityService.canAccessAdmin(emp)) {
             System.out.println("❌ Access Denied: HR/Admin Only.");
             return;
@@ -58,7 +57,6 @@ public class MotorPhPayroll {
         System.out.print("Enter End Date (MM/DD/YYYY): ");
         String end = scanner.nextLine();
 
-        // Pass the object 'employee'
         double salary = payrollService.computeNetSalary(employee, attendance, start, end);
         
         System.out.println("\n💰 Net Salary: PHP " + String.format("%,.2f", salary));
@@ -81,6 +79,5 @@ public class MotorPhPayroll {
             System.out.println("⚠ Employee not found.");
             return;
         }
-        // If you need to calculate salary here, call handleSalaryCalculation(scanner, employee);
     }
 }

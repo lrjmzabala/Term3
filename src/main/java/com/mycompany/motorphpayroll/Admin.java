@@ -15,7 +15,6 @@ public class Admin {
         }
     }
 
-    // ADDED: This getter resolves the compilation error in MotorPhPayroll
     public boolean isAdmin() {
         return this.isAdmin;
     }

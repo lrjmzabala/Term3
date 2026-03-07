@@ -12,7 +12,7 @@ public class AttendanceDAO {
     }
 
     public List<Attendance> findByEmployeeId(String employeeId) {
-        // This utilizes the cache logic in your Utility class
+        // This utilizes the cache logic in Utility class
         return CSVReaderUtil.getAllAttendanceRecords().stream()
                 .filter(a -> a.getEmployeeNumber().equals(employeeId))
                 .toList();

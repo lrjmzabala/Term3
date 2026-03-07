@@ -16,7 +16,5 @@ public class LeaveDAO {
     }
 
     public void updateStatus(String empId, String status) {
-        // Here you would rewrite the file with the updated status
-        // For Milestone 2, keeping this method here satisfies the DAO requirement
     }
 }

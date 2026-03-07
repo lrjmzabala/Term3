@@ -25,6 +25,6 @@ public class SecurityService {
     }
     
     public String getImmediateSupervisor() {
-    return this.immediateSupervisor; // Make sure your variable name matches your CSV header
+    return this.immediateSupervisor; // Make sure your variable name matches CSV header
 }
 }

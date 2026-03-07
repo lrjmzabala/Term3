@@ -35,7 +35,6 @@ public class UserDAO implements DAO<User, String> {
 
     @Override
     public boolean delete(String username) throws Exception {
-        // Implementation depends on if you want to allow deleting users
         List<User> users = findAll();
         boolean removed = users.removeIf(u -> u.getUsername().equals(username));
         if (removed) {
