@@ -624,4 +624,14 @@ public class CSVReaderUtil {
             throw e;
         }
     }
+    
+    // ADDED: Fix for Admin.java compilation error
+    public static Map<String, Employee> getAllEmployees() {
+        return new HashMap<>(employeeCache); // Returning a copy is safer
+    }
+
+    // ADDED: Fix for MotorPhPayroll.java compilation error
+    public static List<Employee> getAllEmployeesList() {
+        return new ArrayList<>(employeeCache.values());
+    }
 }

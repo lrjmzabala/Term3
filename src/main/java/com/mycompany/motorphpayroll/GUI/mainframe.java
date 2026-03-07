@@ -13,6 +13,7 @@ public class mainframe extends JFrame {
     private JPanel adminPanel;
     private JPanel viewAllEmployeesPanel;
     private JPanel employeeSelfServicePanel;
+    private JPanel supervisorPanel; // ✅ New panel for Supervisor
 
     public mainframe() {
         setTitle("MotorPH Payroll System");
@@ -20,14 +21,11 @@ public class mainframe extends JFrame {
         setSize(1000, 700);
         setLocationRelativeTo(null);
 
-       
-        Color backgroundColor = new Color(135, 206, 235); // Sky Blue (example)
-        
-        // Set the background color of the JFrame's content pane
+        Color backgroundColor = new Color(135, 206, 235); // Sky Blue
         getContentPane().setBackground(backgroundColor);
-        // --- END OF BACKGROUND COLOR ADDITION ---
 
-        CSVReaderUtil.loadAllDataToCache();
+        // Ensure data is loaded
+        CSVReaderUtil.loadEmployeesToCache();
 
         LoginDialog loginDialog = new LoginDialog(this);
         loginDialog.setVisible(true);
@@ -36,20 +34,32 @@ public class mainframe extends JFrame {
             String role = loginDialog.getUserRole();
             String loggedInUsername = loginDialog.getUsername();
 
-            System.out.println("User logged in: " + loggedInUsername + " with role: " + role);
-
-            setupMenuBar(); // Call the new method to set up the menu bar
+            setupMenuBar();
 
             tabbedPane = new JTabbedPane();
             add(tabbedPane, BorderLayout.CENTER);
 
-            adminPanel = new AdminPanel();
-            viewAllEmployeesPanel = new ViewEmployeesPanel();
-
+            // --- ROLE-BASED TAB CONFIGURATION ---
+            
+            // 1. ADMIN ROLE: Full access to management tools
             if ("Admin".equalsIgnoreCase(role)) {
+                adminPanel = new AdminPanel();
+                viewAllEmployeesPanel = new ViewEmployeesPanel();
                 tabbedPane.addTab("Admin Panel", adminPanel);
                 tabbedPane.addTab("View All Employees", viewAllEmployeesPanel);
-            } else if ("Employee".equalsIgnoreCase(role)) {
+            } 
+            
+            // 2. SUPERVISOR ROLE: Self-service + Leave Approval Portal
+            else if ("Supervisor".equalsIgnoreCase(role)) {
+                employeeSelfServicePanel = new EmployeePanel(loggedInUsername);
+                supervisorPanel = new SupervisorPanel(); // ✅ The panel with "Approve Leave"
+                
+                tabbedPane.addTab("My Details & Salary", employeeSelfServicePanel);
+                tabbedPane.addTab("Supervisor Portal (Leave Approvals)", supervisorPanel);
+            } 
+            
+            // 3. REGULAR EMPLOYEE: Only their own details
+            else if ("Employee".equalsIgnoreCase(role)) {
                 employeeSelfServicePanel = new EmployeePanel(loggedInUsername);
                 tabbedPane.addTab("My Details & Salary", employeeSelfServicePanel);
             }
@@ -66,21 +76,13 @@ public class mainframe extends JFrame {
         JMenu appMenu = new JMenu("Menu");
 
         JMenuItem signOutMenuItem = new JMenuItem("Sign Out");
-        signOutMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleSignOut();
-            }
-        });
-        appMenu.add(signOutMenuItem);
-
+        signOutMenuItem.addActionListener(e -> handleSignOut());
+        
         JMenuItem exitMenuItem = new JMenuItem("Exit");
-        exitMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
+        exitMenuItem.addActionListener(e -> System.exit(0));
+
+        appMenu.add(signOutMenuItem);
+        appMenu.addSeparator(); // Visually cleaner
         appMenu.add(exitMenuItem);
 
         menuBar.add(appMenu);
@@ -89,16 +91,12 @@ public class mainframe extends JFrame {
 
     private void handleSignOut() {
         this.dispose();
-
         SwingUtilities.invokeLater(() -> {
-            LoginDialog loginDialog = new LoginDialog(null);
-            loginDialog.setVisible(true);
+            new mainframe(); // Re-launch the mainframe which triggers LoginDialog
         });
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new mainframe();
-        });
+        SwingUtilities.invokeLater(mainframe::new);
     }
 }
