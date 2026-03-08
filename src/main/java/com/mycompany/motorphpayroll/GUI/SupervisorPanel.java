@@ -81,7 +81,19 @@ public class SupervisorPanel extends JPanel {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    private void loadLeaveRequests() {
-        // ... (Keep your existing loadLeaveRequests logic here) ...
+   private void loadLeaveRequests() {
+    // 1. Get the name of the supervisor to filter by
+    String supervisorName = currentSupervisor.getLastName() + ", " + currentSupervisor.getFirstName();
+    
+    // 2. Filter: Only load requests from employees whose supervisor matches currentSupervisor
+    for (Employee emp : allEmployees) {
+        String empSupervisor = emp.getSupervisor(); // Ensure this returns "Last, First"
+        
+        // Normalize for comparison
+        if (empSupervisor != null && empSupervisor.equalsIgnoreCase(supervisorName)) {
+            // Add to tableModel only if they are a direct report
+            // ... load their specific leave requests ...
+        }
     }
+}
 }
