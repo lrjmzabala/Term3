@@ -1,7 +1,7 @@
 package com.mycompany.motorphpayroll.GUI;
 
-import com.mycompany.motorphpayroll.DAO.EmployeeDAO; // Ensure this is imported
-import com.mycompany.motorphpayroll.model.Employee;  // Ensure this is imported
+import com.mycompany.motorphpayroll.DAO.EmployeeDAO; 
+import com.mycompany.motorphpayroll.model.Employee; 
 import com.mycompany.motorphpayroll.service.SecurityService;
 import com.mycompany.motorphpayroll.util.CSVReaderUtil;
 import javax.swing.*;
@@ -12,7 +12,7 @@ import java.util.List;
 public class mainframe extends JFrame {
 
     private final SecurityService securityService = new SecurityService();
-    private final EmployeeDAO employeeDAO = new EmployeeDAO(); // Added to fetch employee objects
+    private final EmployeeDAO employeeDAO = new EmployeeDAO(); 
     private JTabbedPane tabbedPane;
 
     public mainframe() {
@@ -29,7 +29,6 @@ public class mainframe extends JFrame {
 
         if (loginDialog.isLoggedIn()) {
             String username = loginDialog.getUsername();
-            // Fetch the actual employee object based on the username/ID
             Employee loggedInUser = employeeDAO.getEmployeeById(username);
             List<Employee> allEmployees = new ArrayList<>(employeeDAO.getAllEmployees().values());
 
@@ -45,9 +44,9 @@ public class mainframe extends JFrame {
                 tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
             }
 
-            // Supervisor check using the full list to detect hierarchy
+            // UPDATED: Supervisor check passes the required data to the constructor
             if (securityService.isSupervisor(loggedInUser, allEmployees)) {
-                tabbedPane.addTab("Supervisor Portal", new SupervisorPanel());
+                tabbedPane.addTab("Supervisor Portal", new SupervisorPanel(loggedInUser, allEmployees));
             }
 
             add(tabbedPane, BorderLayout.CENTER);

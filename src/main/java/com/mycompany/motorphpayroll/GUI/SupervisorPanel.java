@@ -46,10 +46,6 @@ public class SupervisorPanel extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    SupervisorPanel() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
     private void processAction(String newStatus) {
         int selectedRow = leaveTable.getSelectedRow();
         if (selectedRow != -1) {
