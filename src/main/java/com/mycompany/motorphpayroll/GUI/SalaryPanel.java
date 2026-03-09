@@ -8,23 +8,47 @@ public class SalaryPanel extends JPanel {
     private JTextField startDateField, endDateField;
     private JLabel salaryLabel;
     private JButton viewSalaryButton;
+    private JTextArea breakdownArea; // New area for the detailed breakdown
 
     public SalaryPanel() {
-        setLayout(new GridLayout(3, 2));
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        add(new JLabel("Start Date (MM/DD/YYYY):"));
+        // --- TOP: Input Section ---
+        JPanel inputPanel = new JPanel(new GridLayout(3, 2, 5, 5));
+        inputPanel.add(new JLabel("Start Date (MM/DD/YYYY):"));
         startDateField = new JTextField(10);
-        add(startDateField);
+        inputPanel.add(startDateField);
 
-        add(new JLabel("End Date (MM/DD/YYYY):"));
+        inputPanel.add(new JLabel("End Date (MM/DD/YYYY):"));
         endDateField = new JTextField(10);
-        add(endDateField);
+        inputPanel.add(endDateField);
 
         viewSalaryButton = new JButton("View Salary");
-        add(viewSalaryButton);
+        inputPanel.add(viewSalaryButton);
 
         salaryLabel = new JLabel("💰 Net Salary: PHP 0.00");
-        add(salaryLabel);
+        salaryLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        inputPanel.add(salaryLabel);
+
+        add(inputPanel, BorderLayout.NORTH);
+
+        // --- CENTER: Breakdown Section ---
+        breakdownArea = new JTextArea();
+        breakdownArea.setEditable(false);
+        breakdownArea.setFont(new Font("Monospaced", Font.PLAIN, 12)); // Monospaced keeps columns aligned
+        
+        JScrollPane scrollPane = new JScrollPane(breakdownArea);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Salary Breakdown Details"));
+        add(scrollPane, BorderLayout.CENTER);
+    }
+
+    /**
+     * Updates the UI with the full calculation results.
+     */
+    public void displaySalaryDetails(double netSalary, String breakdownText) {
+        salaryLabel.setText("💰 Net Salary: PHP " + String.format("%,.2f", netSalary));
+        breakdownArea.setText(breakdownText);
     }
 
     public String getStartDate() {
@@ -37,9 +61,5 @@ public class SalaryPanel extends JPanel {
 
     public JButton getViewSalaryButton() {
         return viewSalaryButton;
-    }
-
-    public void updateSalaryLabel(double netSalary) {
-        salaryLabel.setText("💰 Net Salary: PHP " + String.format("%,.2f", netSalary));
     }
 }
