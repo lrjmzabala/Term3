@@ -70,9 +70,17 @@ public class MotorPhPayroll {
         System.out.print("Enter End Date (MM/DD/YYYY): ");
         String end = scanner.nextLine();
 
-        double salary = payrollService.computeNetSalary(employee, attendance, start, end);
+        // FIX: Call the updated service method that returns the PayrollSummary record
+        PayrollService.PayrollSummary summary = payrollService.getPayrollDetails(employee, attendance, start, end);
         
-        System.out.println("\n💰 Net Salary: PHP " + String.format("%,.2f", salary));
+        // Display the results using the new structure
+        System.out.println("\n--- PAYROLL SUMMARY ---");
+        System.out.println("Hours Worked:     " + String.format("%.2f", summary.hours()));
+        System.out.println("Basic Pay:        PHP " + String.format("%,.2f", summary.basic()));
+        System.out.println("Total Allowances: PHP " + String.format("%,.2f", summary.allowances()));
+        System.out.println("Deductions:       PHP " + String.format("%,.2f", (summary.sss() + summary.phil() + summary.pag() + summary.tax())));
+        System.out.println("-----------------------");
+        System.out.println("💰 Net Salary:    PHP " + String.format("%,.2f", summary.net()));
     }
 
     // UPDATED: Now accepts the required parameters for SupervisorPanel
