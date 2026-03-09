@@ -2,8 +2,9 @@ package com.mycompany.motorphpayroll.GUI;
 
 import com.mycompany.motorphpayroll.model.Employee;
 import com.mycompany.motorphpayroll.model.Attendance;
+import com.mycompany.motorphpayroll.DAO.AttendanceDAO; // Added DAO import
 import com.mycompany.motorphpayroll.util.CSVReaderUtil;
-import com.mycompany.motorphpayroll.util.CSVWriterUtil; // Added this
+import com.mycompany.motorphpayroll.util.CSVWriterUtil;
 import com.mycompany.motorphpayroll.util.PayrollCalculator;
 
 import javax.swing.*;
@@ -19,17 +20,18 @@ import java.text.SimpleDateFormat;
 
 public class EmployeePanel extends JPanel {
     private JDateChooser startDateChooser, endDateChooser; 
-    private JDateChooser leaveStartChooser, leaveEndChooser; // New for Leave
-    private JTextField leaveReasonField; // New for Leave
+    private JDateChooser leaveStartChooser, leaveEndChooser;
+    private JTextField leaveReasonField;
     private JTextArea employeeDetailsArea;
     private JLabel salaryLabel;
     private JButton viewSalaryButton;
     private JButton loginTimeButton;
     private JButton logoutTimeButton;
-    private JButton submitLeaveButton; // New for Leave
+    private JButton submitLeaveButton;
     private JLabel attendanceMessageLabel;
 
     private String loggedInEmployeeNumber;
+    private final AttendanceDAO attendanceDAO = new AttendanceDAO(); // Initialize DAO
 
     public EmployeePanel(String employeeNumber) {
         this.loggedInEmployeeNumber = employeeNumber;
@@ -122,7 +124,6 @@ public class EmployeePanel extends JPanel {
         loginTimeButton.addActionListener(e -> recordAttendance("log_in"));
         logoutTimeButton.addActionListener(e -> recordAttendance("log_out"));
 
-        // Leave Request Listener
         submitLeaveButton.addActionListener(e -> {
             Date sDate = leaveStartChooser.getDate();
             Date eDate = leaveEndChooser.getDate();
@@ -133,7 +134,6 @@ public class EmployeePanel extends JPanel {
                 return;
             }
 
-            // Define your leave CSV path (adjust as per your project structure)
             String leavePath = "leave_requests.csv"; 
             CSVWriterUtil.appendLeaveRequest(leavePath, loggedInEmployeeNumber, sDate, eDate, reason);
             
@@ -143,13 +143,11 @@ public class EmployeePanel extends JPanel {
             leaveEndChooser.setDate(null);
         });
 
-        // View Salary Listener (Keep your existing logic)
         viewSalaryButton.addActionListener(e -> {
             calculateAndDisplaySalary();
         });
     }
 
-    // Encapsulated salary logic for cleaner code
     private void calculateAndDisplaySalary() {
         Date startDate = startDateChooser.getDate();
         Date endDate = endDateChooser.getDate();
@@ -159,17 +157,11 @@ public class EmployeePanel extends JPanel {
             return;
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         String startDateStr = new SimpleDateFormat("MM/dd/yyyy").format(startDate);
         String endDateStr = new SimpleDateFormat("MM/dd/yyyy").format(endDate);
         
-        List<Attendance> allAttendanceRecords = CSVReaderUtil.readAttendanceFromCSV(CSVReaderUtil.getWritableAttendanceCsvPath());
-
-        List<Attendance> employeeAttendance = allAttendanceRecords.stream()
-            .filter(a -> a.getEmployeeNumber().equals(loggedInEmployeeNumber))
-            .toList();
-
-        List<Attendance> filteredAttendance = employeeAttendance.stream()
+        // --- UPDATED: Fetching via AttendanceDAO ensures date normalization ---
+        List<Attendance> filteredAttendance = attendanceDAO.findByEmployeeId(loggedInEmployeeNumber).stream()
             .filter(a -> a.isWithinDateRange(startDateStr, endDateStr))
             .toList();
 

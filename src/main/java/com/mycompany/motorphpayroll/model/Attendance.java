@@ -10,7 +10,7 @@ public class Attendance {
     private String employeeNumber;
     private String lastName;
     private String firstName;
-    private String date; // Stored as MM/DD/YYYY string
+    private String date; // Stored as M/d/yyyy string
     private String logInTime; // Stored as h:mm:ss a string
     private String logOutTime; // Stored as h:mm:ss a string
 
@@ -31,21 +31,16 @@ public class Attendance {
     public String getLogInTime() { return logInTime; }
     public String getLogOutTime() { return logOutTime; }
 
-    // Setters (important for updating records)
+    // Setters
     public void setLogInTime(String logInTime) { this.logInTime = logInTime; }
     public void setLogOutTime(String logOutTime) { this.logOutTime = logOutTime; }
 
     /**
      * Calculates the total hours worked for this attendance record.
-     * Assumes logInTime and logOutTime are in "h:mm:ss a" format.
-     * Returns 0.0 if either time is missing or cannot be parsed.
-     * Accounts for lunch break (1 hour) if both times are present and duration > 4 hours.
-     *
-     * @return Total hours worked (double), or 0.0 if calculation is not possible.
      */
     public double getTotalWorkedHours() {
         if (logInTime == null || logInTime.isEmpty() || logOutTime == null || logOutTime.isEmpty()) {
-            return 0.0; // Cannot calculate if times are missing
+            return 0.0;
         }
 
         try {
@@ -53,16 +48,13 @@ public class Attendance {
             LocalTime inTime = LocalTime.parse(logInTime, timeFormatter);
             LocalTime outTime = LocalTime.parse(logOutTime, timeFormatter);
 
-            // Calculate duration
             Duration duration = Duration.between(inTime, outTime);
             double hours = duration.toMinutes() / 60.0;
 
-            // Assuming a standard 1-hour lunch break if working more than 4 hours
             if (hours > 4.0) {
                 hours -= 1.0;
             }
 
-            // Ensure hours are not negative
             return Math.max(0.0, hours);
 
         } catch (DateTimeParseException e) {
@@ -73,13 +65,13 @@ public class Attendance {
 
     /**
      * Checks if this attendance record's date falls within a given date range.
-     * @param startDateStr The start date string (MM/DD/YYYY).
-     * @param endDateStr The end date string (MM/DD/YYYY).
-     * @return true if the attendance date is within the range (inclusive), false otherwise.
+     * Updated formatter to "M/d/yyyy" to handle both "6/3/2024" and "06/03/2024".
      */
     public boolean isWithinDateRange(String startDateStr, String endDateStr) {
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+            // Using M/d/yyyy makes the parser flexible for single or double digits
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+            
             LocalDate attendanceDate = LocalDate.parse(this.date, formatter);
             LocalDate startDate = LocalDate.parse(startDateStr, formatter);
             LocalDate endDate = LocalDate.parse(endDateStr, formatter);
