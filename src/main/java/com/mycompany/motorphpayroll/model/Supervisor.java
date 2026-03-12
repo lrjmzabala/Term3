@@ -3,7 +3,7 @@ package com.mycompany.motorphpayroll.model;
 import java.util.List;
 
 // Supervisor inherits from Employee
-public class Supervisor extends Employee {
+public class Supervisor extends Employee implements ISupervisor {
     private List<String> subordinateIds;
 
     public Supervisor(String employeeNumber, String lastName, String firstName, String birthday, String address, 
@@ -18,7 +18,7 @@ public class Supervisor extends Employee {
               basicSalary, riceSubsidy, phoneAllowance, clothingAllowance, 
               grossSemiMonthlyRate, hourlyRate);
     }
-
+@Override
     public void approveLeave(String employeeId, String startDate) {
         System.out.println("Supervisor " + getFullName() + " approved leave for Employee #" + employeeId);
         // Logic to update CSV status from PENDING to APPROVED would go here
