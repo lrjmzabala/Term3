@@ -13,6 +13,10 @@ import java.text.ParseException;
 import com.mycompany.motorphpayroll.util.CSVWriterUtil;
 
 public class AdminPanel extends JPanel {
+    
+    private final com.mycompany.motorphpayroll.service.SecurityService securityService = 
+            new com.mycompany.motorphpayroll.service.SecurityService();
+    private Employee currentUser;
 
     // Employee Details Fields
     private JTextField empNumField, lastNameField, firstNameField, birthdayField, addressField,
@@ -182,6 +186,11 @@ public class AdminPanel extends JPanel {
     }
     
     private void addEmployee() {
+        if (!securityService.canManageLogins(currentUser) && !userPasswordField.getText().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Access Denied: Only IT can manage login credentials.");
+        return;
+    }
+        
         String[] data = {
             empNumField.getText(), lastNameField.getText(), firstNameField.getText(),
             birthdayField.getText(), addressField.getText(), phoneField.getText(),
@@ -324,4 +333,23 @@ public class AdminPanel extends JPanel {
         displayArea.append("\nUpdating Attendance: " + date + " In: " + in + " Out: " + out);
         JOptionPane.showMessageDialog(this, "Attendance Updated Successfully.");
     }
+    
+    private void applyRoleRestrictions() {
+    // 1. IT Access for Credentials
+    if (!securityService.canManageLogins(currentUser)) {
+        userPasswordField.setEnabled(false);
+        confirmPasswordField.setEnabled(false);
+        userTypeComboBox.setEnabled(false);
+    }
+
+    // 2. Finance/Admin Salary Restrictions
+    if (!securityService.canEditSalary(currentUser)) {
+        basicSalaryField.setEditable(false);
+        riceSubsidyField.setEditable(false);
+        phoneAllowanceField.setEditable(false);
+        clothingAllowanceField.setEditable(false);
+        grossSemiMonthlyRateField.setEditable(false);
+        hourlyRateField.setEditable(false);
+    }
+}
 }
