@@ -10,10 +10,11 @@ public class Attendance {
     private String employeeNumber;
     private String lastName;
     private String firstName;
-    private String date; // Stored as M/d/yyyy string
-    private String logInTime; // Stored as h:mm:ss a string
-    private String logOutTime; // Stored as h:mm:ss a string
+    private String date;
+    private String logInTime;
+    private String logOutTime;
 
+    // Existing constructor
     public Attendance(String employeeNumber, String lastName, String firstName, String date, String logInTime, String logOutTime) {
         this.employeeNumber = employeeNumber;
         this.lastName = lastName;
@@ -21,6 +22,18 @@ public class Attendance {
         this.date = date;
         this.logInTime = logInTime;
         this.logOutTime = logOutTime;
+    }
+
+    // NEW Constructor: Accepts String[] array from CSVReaderUtil
+    public Attendance(String[] v) {
+        if (v.length >= 6) {
+            this.employeeNumber = v[0].trim();
+            this.lastName = v[1].trim();
+            this.firstName = v[2].trim();
+            this.date = v[3].trim();
+            this.logInTime = v[4].trim();
+            this.logOutTime = v[5].trim();
+        }
     }
 
     // Getters

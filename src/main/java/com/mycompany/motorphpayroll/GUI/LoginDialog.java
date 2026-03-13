@@ -88,28 +88,29 @@ public class LoginDialog extends JDialog {
     
 
     private void attemptLogin() {
-        String enteredUsername = usernameField.getText().trim(); // Use a new variable to avoid confusion
-        String enteredPassword = new String(passwordField.getPassword()); // Use a new variable
+        String enteredUsername = usernameField.getText().trim();
+        String enteredPassword = new String(passwordField.getPassword());
 
-        messageLabel.setText(""); // Clear previous messages
+        messageLabel.setText("");
 
-        // Use CSVReaderUtil.getUserByUsername from the cache
-        Optional<User> userOptional = CSVReaderUtil.getUserByUsername(enteredUsername);
+        // FIX: Wrap the result in Optional.ofNullable()
+        // This assumes CSVReaderUtil.getUserByUsername(username) returns a User object or null
+        Optional<User> userOptional = Optional.ofNullable(CSVReaderUtil.getUserByUsername(enteredUsername));
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (user.getPassword().equals(enteredPassword)) {
                 loggedIn = true;
-                loggedInUsername = enteredUsername; // Store the actual logged in username
+                loggedInUsername = enteredUsername;
                 userRole = user.getRole();
-                dispose(); // Close the login dialog
+                dispose();
             } else {
                 messageLabel.setText("Invalid password.");
-                passwordField.setText(""); // Clear password field for security
+                passwordField.setText("");
             }
         } else {
             messageLabel.setText("Invalid username or password.");
-            passwordField.setText(""); // Clear password field for security
+            passwordField.setText("");
         }
     }
 

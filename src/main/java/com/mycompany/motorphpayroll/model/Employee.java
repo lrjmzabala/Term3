@@ -1,19 +1,64 @@
 package com.mycompany.motorphpayroll.model;
 
-public class Employee {
-    private String employeeNumber, lastName, firstName, birthday, address, phoneNumber, sssNumber, philhealthNumber, tinNumber, pagibigNumber, status, position, supervisor;
-    private double basicSalary, riceSubsidy, phoneAllowance, clothingAllowance, grossSemiMonthlyRate, hourlyRate;
+public abstract class Employee {
+    private String employeeNumber, lastName, firstName, birthday, address, phoneNumber, 
+                   sssNumber, philhealthNumber, tinNumber, pagibigNumber, status, 
+                   position, supervisor, immediateSupervisor;
+    private double basicSalary, riceSubsidy, phoneAllowance, clothingAllowance, 
+                   grossSemiMonthlyRate, hourlyRate;
 
     public Employee(String employeeNumber, String lastName, String firstName, String birthday, String address, String phoneNumber, String sssNumber, String philhealthNumber, String tinNumber, String pagibigNumber, String status, String position, String supervisor, double basicSalary, double riceSubsidy, double phoneAllowance, double clothingAllowance, double grossSemiMonthlyRate, double hourlyRate) {
-        this.employeeNumber = employeeNumber; this.lastName = lastName; this.firstName = firstName; this.birthday = birthday; this.address = address; this.phoneNumber = phoneNumber; this.sssNumber = sssNumber; this.philhealthNumber = philhealthNumber; this.tinNumber = tinNumber; this.pagibigNumber = pagibigNumber; this.status = status; this.position = position; this.supervisor = supervisor; this.basicSalary = basicSalary; this.riceSubsidy = riceSubsidy; this.phoneAllowance = phoneAllowance; this.clothingAllowance = clothingAllowance; this.grossSemiMonthlyRate = grossSemiMonthlyRate; this.hourlyRate = hourlyRate;
+        this.employeeNumber = employeeNumber; 
+        this.lastName = lastName; 
+        this.firstName = firstName; 
+        this.birthday = birthday; 
+        this.address = address; 
+        this.phoneNumber = phoneNumber; 
+        this.sssNumber = sssNumber; 
+        this.philhealthNumber = philhealthNumber; 
+        this.tinNumber = tinNumber; 
+        this.pagibigNumber = pagibigNumber; 
+        this.status = status; 
+        this.position = position; 
+        this.supervisor = supervisor; 
+        this.basicSalary = basicSalary; 
+        this.riceSubsidy = riceSubsidy; 
+        this.phoneAllowance = phoneAllowance; 
+        this.clothingAllowance = clothingAllowance; 
+        this.grossSemiMonthlyRate = grossSemiMonthlyRate; 
+        this.hourlyRate = hourlyRate;
     }
-    private String immediateSupervisor; // Ensure this field exists
 
-public String getImmediateSupervisor() {
-    return immediateSupervisor;
-}
+    // --- Concrete Implementations ---
+    public static class RegularEmployee extends Employee {
+        public RegularEmployee(String[] v) {
+            super(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], 
+                  Double.parseDouble(v[13]), Double.parseDouble(v[14]), Double.parseDouble(v[15]), 
+                  Double.parseDouble(v[16]), Double.parseDouble(v[17]), Double.parseDouble(v[18]));
+        }
+        @Override
+        public boolean canAccessModule(String m) { return true; }
+    }
 
-    // Getters
+    public static class Supervisor extends Employee implements ISupervisor {
+        public Supervisor(String[] v) {
+            super(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], 
+                  Double.parseDouble(v[13]), Double.parseDouble(v[14]), Double.parseDouble(v[15]), 
+                  Double.parseDouble(v[16]), Double.parseDouble(v[17]), Double.parseDouble(v[18]));
+        }
+
+        @Override
+        public boolean canAccessModule(String m) { return m.equals("Attendance") || m.equals("Leave"); }
+
+        @Override
+        public void approveLeave(String employeeId, String startDate) {
+            System.out.println("Supervisor " + getFullName() + " is approving leave for " + employeeId);
+        }
+    }
+
+    public abstract boolean canAccessModule(String moduleName);
+
+    // --- Getters ---
     public String getEmployeeNumber() { return employeeNumber; }
     public String getLastName() { return lastName; }
     public String getFirstName() { return firstName; }
@@ -27,6 +72,7 @@ public String getImmediateSupervisor() {
     public String getStatus() { return status; }
     public String getPosition() { return position; }
     public String getSupervisor() { return supervisor; }
+    public String getImmediateSupervisor() { return immediateSupervisor; }
     public double getBasicSalary() { return basicSalary; }
     public double getRiceSubsidy() { return riceSubsidy; }
     public double getPhoneAllowance() { return phoneAllowance; }
@@ -34,7 +80,7 @@ public String getImmediateSupervisor() {
     public double getGrossSemiMonthlyRate() { return grossSemiMonthlyRate; }
     public double getHourlyRate() { return hourlyRate; }
 
-    // Setters (These fix the "cannot find symbol" errors in AdminPanel)
+    // --- Setters ---
     public void setLastName(String ln) { this.lastName = ln; }
     public void setFirstName(String fn) { this.firstName = fn; }
     public void setBirthday(String b) { this.birthday = b; }
@@ -54,7 +100,7 @@ public String getImmediateSupervisor() {
     public void setGrossSemiMonthlyRate(double g) { this.grossSemiMonthlyRate = g; }
     public void setHourlyRate(double h) { this.hourlyRate = h; }
 
-    // Logic Methods (These fix the errors in PayrollCalculator and Supervisor)
+    // --- Helpers ---
     public String getFullName() { return firstName + " " + lastName; }
     public double getDailyWage() { return hourlyRate * 8.0; }
     

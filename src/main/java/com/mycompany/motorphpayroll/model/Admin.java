@@ -1,4 +1,4 @@
-package com.mycompany.motorphpayroll;
+package com.mycompany.motorphpayroll.model;
 
 import com.mycompany.motorphpayroll.model.Employee;
 import com.mycompany.motorphpayroll.DAO.EmployeeDAO;
