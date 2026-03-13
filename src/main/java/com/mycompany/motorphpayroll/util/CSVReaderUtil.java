@@ -221,4 +221,21 @@ public static void loadAttendanceToCache() {
     }
     System.out.println("DEBUG: Loaded " + attendanceCache.size() + " unique employees into attendance cache.");
 }
+
+public static String[] getRawDataById(String employeeId) {
+    try (BufferedReader br = new BufferedReader(new FileReader(writableEmployeeCsvPath))) {
+        String line;
+        br.readLine(); // Skip header
+        while ((line = br.readLine()) != null) {
+            String[] v = splitCSVLine(line);
+            // Assuming index 0 is the Employee ID
+            if (v.length > 0 && v[0].trim().equals(employeeId.trim())) {
+                return v;
+            }
+        }
+    } catch (IOException e) {
+        System.err.println("Error reading CSV for ID " + employeeId + ": " + e.getMessage());
+    }
+    return null;
+}
 }

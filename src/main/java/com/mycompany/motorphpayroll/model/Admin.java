@@ -1,33 +1,16 @@
 package com.mycompany.motorphpayroll.model;
 
-import com.mycompany.motorphpayroll.model.Employee;
-import com.mycompany.motorphpayroll.DAO.EmployeeDAO;
-import java.util.Map;
+public class Admin extends Employee {
 
-public class Admin {
-    private boolean isAdmin = false;
-    private EmployeeDAO employeeDAO;
-
-    public Admin(Employee employee) {
-        this.employeeDAO = new EmployeeDAO();
-        if (employee != null && "HR".equalsIgnoreCase(employee.getPosition())) {
-            this.isAdmin = true;
-        }
+    public Admin(String[] v) {
+        super(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], 
+              Double.parseDouble(v[13]), Double.parseDouble(v[14]), Double.parseDouble(v[15]), 
+              Double.parseDouble(v[16]), Double.parseDouble(v[17]), Double.parseDouble(v[18]));
     }
 
-    public boolean isAdmin() {
-        return this.isAdmin;
-    }
-
-    public void updateEmployeeDetails(String employeeNumber, Employee updatedInfo) throws IllegalAccessException {
-        if (!isAdmin) {
-            throw new IllegalAccessException("Access Denied.");
-        }
-
-        Map<String, Employee> employees = employeeDAO.getAllEmployees();
-        if (employees.containsKey(employeeNumber)) {
-            employeeDAO.updateEmployee(updatedInfo);
-            System.out.println("✅ Employee updated via DAO.");
-        }
+    @Override
+    public boolean canAccessModule(String m) {
+        // This overrides the abstract method from the Employee parent class
+        return m.equals("Admin") || m.equals("Attendance") || m.equals("Profile");
     }
 }

@@ -175,6 +175,7 @@ public class AdminPanel extends JPanel {
 
     // [Method implementations: addEmployee, updateEmployee, deleteEmployee, searchEmployee, 
     // searchAttendance, updateAttendance, clearFields, clearFieldsExceptEmpNum, parseDouble 
+    // remain the same as your previous code]
 
     private String parseTime(String text, String fieldName) {
         if (text == null || text.trim().isEmpty() || !text.matches("\\d{2}:\\d{2}:\\d{2} (AM|PM)")) {
@@ -185,14 +186,14 @@ public class AdminPanel extends JPanel {
     }
     
     private void addEmployee() {
-    // 1. Run Validation
+        // 1. Run Validation
     if (!validateInputs()) return;
 
+    // 2. Existing Security Check
     if (!securityService.canManageLogins(currentUser) && !userPasswordField.getText().isEmpty()) {
         JOptionPane.showMessageDialog(this, "Access Denied: Only IT can manage login credentials.");
         return;
     }
-        
         String[] data = {
             empNumField.getText(), lastNameField.getText(), firstNameField.getText(),
             birthdayField.getText(), addressField.getText(), phoneField.getText(),
@@ -251,36 +252,8 @@ public class AdminPanel extends JPanel {
         }
     }
     
-    private void clearFields() {
-        empNumField.setText("");
-        lastNameField.setText("");
-        firstNameField.setText("");
-        birthdayField.setText("");
-        addressField.setText("");
-        phoneField.setText("");
-        sssField.setText("");
-        philhealthField.setText("");
-        tinField.setText("");
-        pagibigField.setText("");
-        statusField.setText("");
-        positionField.setText("");
-        supervisorField.setText("");
-        basicSalaryField.setText("");
-        riceSubsidyField.setText("");
-        phoneAllowanceField.setText("");
-        clothingAllowanceField.setText("");
-        grossSemiMonthlyRateField.setText("");
-        hourlyRateField.setText("");
-        userPasswordField.setText("");
-        confirmPasswordField.setText("");
-        attendanceDateField.setText("");
-        timeInField.setText("");
-        timeOutField.setText("");
-        displayArea.setText("Fields Cleared.");
-    }
-    
     private boolean validateInputs() {
-    // 1. Required Fields Check
+    // 1. Check for Required Fields
     if (empNumField.getText().trim().isEmpty() || 
         lastNameField.getText().trim().isEmpty() || 
         firstNameField.getText().trim().isEmpty()) {
@@ -309,6 +282,35 @@ public class AdminPanel extends JPanel {
 
     return true;
 }
+    
+    private void clearFields() {
+        empNumField.setText("");
+        lastNameField.setText("");
+        firstNameField.setText("");
+        birthdayField.setText("");
+        addressField.setText("");
+        phoneField.setText("");
+        sssField.setText("");
+        philhealthField.setText("");
+        tinField.setText("");
+        pagibigField.setText("");
+        statusField.setText("");
+        positionField.setText("");
+        supervisorField.setText("");
+        basicSalaryField.setText("");
+        riceSubsidyField.setText("");
+        phoneAllowanceField.setText("");
+        clothingAllowanceField.setText("");
+        grossSemiMonthlyRateField.setText("");
+        hourlyRateField.setText("");
+        userPasswordField.setText("");
+        confirmPasswordField.setText("");
+        attendanceDateField.setText("");
+        timeInField.setText("");
+        timeOutField.setText("");
+        displayArea.setText("Fields Cleared.");
+    }
+    
     
     private void searchEmployee() {
         String id = empNumField.getText().trim();
@@ -365,25 +367,4 @@ public class AdminPanel extends JPanel {
         displayArea.append("\nUpdating Attendance: " + date + " In: " + in + " Out: " + out);
         JOptionPane.showMessageDialog(this, "Attendance Updated Successfully.");
     }
-    
-    private void applyRoleRestrictions() {
-    // 1. IT Access for Credentials
-    if (!securityService.canManageLogins(currentUser)) {
-        userPasswordField.setEnabled(false);
-        confirmPasswordField.setEnabled(false);
-        userTypeComboBox.setEnabled(false);
-    }
-
-    // 2. Finance/Admin Salary Restrictions
-    if (!securityService.canEditSalary(currentUser)) {
-        basicSalaryField.setEditable(false);
-        riceSubsidyField.setEditable(false);
-        phoneAllowanceField.setEditable(false);
-        clothingAllowanceField.setEditable(false);
-        grossSemiMonthlyRateField.setEditable(false);
-        hourlyRateField.setEditable(false);
-    }
-}
-    
-    
 }

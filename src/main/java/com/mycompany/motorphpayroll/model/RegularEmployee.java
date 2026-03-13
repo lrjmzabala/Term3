@@ -7,5 +7,8 @@ public class RegularEmployee extends Employee {
               Double.parseDouble(v[16]), Double.parseDouble(v[17]), Double.parseDouble(v[18]));
     }
     @Override
-    public boolean canAccessModule(String m) { return true; }
+    public boolean canAccessModule(String m) { 
+        // This logic now overrides the abstract requirement from the parent class
+        return m.equals("Attendance") || m.equals("Profile");
+    }
 }

@@ -34,15 +34,19 @@ public class mainframe extends JFrame {
 
             setupMenuBar();
             tabbedPane = new JTabbedPane();
-            
-            // Add Self-Service for all
             tabbedPane.addTab("My Details & Salary", new EmployeePanel(username));
 
-            // Role-Based Tabs using the Employee object
-            if (securityService.canAccessAdmin(loggedInUser)) {
-                tabbedPane.addTab("Admin Panel", new AdminPanel());
-                tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
-            }
+            // POLYMORPHIC CHECKS
+            // The system now asks the object itself: "Can you access this?"
+            if (loggedInUser.canAccessModule("Admin")) {
+            tabbedPane.addTab("Admin Panel", new AdminPanel());
+            tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
+}
+
+if (loggedInUser.canAccessModule("Leave")) {
+    // Note: ensure loggedInUser is actually a Supervisor type here
+    tabbedPane.addTab("Supervisor Portal", new SupervisorPanel(loggedInUser, allEmployees));
+}
 
             // UPDATED: Supervisor check passes the required data to the constructor
             if (securityService.isSupervisor(loggedInUser, allEmployees)) {
