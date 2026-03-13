@@ -175,7 +175,6 @@ public class AdminPanel extends JPanel {
 
     // [Method implementations: addEmployee, updateEmployee, deleteEmployee, searchEmployee, 
     // searchAttendance, updateAttendance, clearFields, clearFieldsExceptEmpNum, parseDouble 
-    // remain the same as your previous code]
 
     private String parseTime(String text, String fieldName) {
         if (text == null || text.trim().isEmpty() || !text.matches("\\d{2}:\\d{2}:\\d{2} (AM|PM)")) {
@@ -186,7 +185,10 @@ public class AdminPanel extends JPanel {
     }
     
     private void addEmployee() {
-        if (!securityService.canManageLogins(currentUser) && !userPasswordField.getText().isEmpty()) {
+    // 1. Run Validation
+    if (!validateInputs()) return;
+
+    if (!securityService.canManageLogins(currentUser) && !userPasswordField.getText().isEmpty()) {
         JOptionPane.showMessageDialog(this, "Access Denied: Only IT can manage login credentials.");
         return;
     }
@@ -277,6 +279,36 @@ public class AdminPanel extends JPanel {
         displayArea.setText("Fields Cleared.");
     }
     
+    private boolean validateInputs() {
+    // 1. Required Fields Check
+    if (empNumField.getText().trim().isEmpty() || 
+        lastNameField.getText().trim().isEmpty() || 
+        firstNameField.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Employee #, Last Name, and First Name are required.");
+        return false;
+    }
+
+    // 2. Numeric Validation for Financial Fields
+    try {
+        Double.parseDouble(basicSalaryField.getText().trim());
+        Double.parseDouble(riceSubsidyField.getText().trim());
+        Double.parseDouble(phoneAllowanceField.getText().trim());
+        Double.parseDouble(clothingAllowanceField.getText().trim());
+        Double.parseDouble(grossSemiMonthlyRateField.getText().trim());
+        Double.parseDouble(hourlyRateField.getText().trim());
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Salary and Allowance fields must be valid numeric values.");
+        return false;
+    }
+
+    // 3. Duplicate ID Check
+    if (CSVReaderUtil.getEmployeeById(empNumField.getText().trim()) != null) {
+        JOptionPane.showMessageDialog(this, "Employee ID already exists. Please use a unique ID.");
+        return false;
+    }
+
+    return true;
+}
     
     private void searchEmployee() {
         String id = empNumField.getText().trim();
@@ -352,4 +384,6 @@ public class AdminPanel extends JPanel {
         hourlyRateField.setEditable(false);
     }
 }
+    
+    
 }
