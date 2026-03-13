@@ -21,39 +21,12 @@ public abstract class Employee {
         this.status = status; 
         this.position = position; 
         this.supervisor = supervisor; 
-        this.basicSalary = basicSalary; 
+        setBasicSalary(basicSalary);
         this.riceSubsidy = riceSubsidy; 
         this.phoneAllowance = phoneAllowance; 
         this.clothingAllowance = clothingAllowance; 
         this.grossSemiMonthlyRate = grossSemiMonthlyRate; 
         this.hourlyRate = hourlyRate;
-    }
-
-    // --- Concrete Implementations ---
-    public static class RegularEmployee extends Employee {
-        public RegularEmployee(String[] v) {
-            super(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], 
-                  Double.parseDouble(v[13]), Double.parseDouble(v[14]), Double.parseDouble(v[15]), 
-                  Double.parseDouble(v[16]), Double.parseDouble(v[17]), Double.parseDouble(v[18]));
-        }
-        @Override
-        public boolean canAccessModule(String m) { return true; }
-    }
-
-    public static class Supervisor extends Employee implements ISupervisor {
-        public Supervisor(String[] v) {
-            super(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], 
-                  Double.parseDouble(v[13]), Double.parseDouble(v[14]), Double.parseDouble(v[15]), 
-                  Double.parseDouble(v[16]), Double.parseDouble(v[17]), Double.parseDouble(v[18]));
-        }
-
-        @Override
-        public boolean canAccessModule(String m) { return m.equals("Attendance") || m.equals("Leave"); }
-
-        @Override
-        public void approveLeave(String employeeId, String startDate) {
-            System.out.println("Supervisor " + getFullName() + " is approving leave for " + employeeId);
-        }
     }
 
     public abstract boolean canAccessModule(String moduleName);
@@ -80,7 +53,7 @@ public abstract class Employee {
     public double getGrossSemiMonthlyRate() { return grossSemiMonthlyRate; }
     public double getHourlyRate() { return hourlyRate; }
 
-    // --- Setters ---
+    // --- Setters (with validation in setBasicSalary) ---
     public void setLastName(String ln) { this.lastName = ln; }
     public void setFirstName(String fn) { this.firstName = fn; }
     public void setBirthday(String b) { this.birthday = b; }
@@ -93,7 +66,10 @@ public abstract class Employee {
     public void setStatus(String s) { this.status = s; }
     public void setPosition(String p) { this.position = p; }
     public void setSupervisor(String s) { this.supervisor = s; }
-    public void setBasicSalary(double b) { this.basicSalary = b; }
+    public void setBasicSalary(double b) { 
+        if (b < 0) throw new IllegalArgumentException("Basic Salary cannot be negative");
+        this.basicSalary = b; 
+    }
     public void setRiceSubsidy(double r) { this.riceSubsidy = r; }
     public void setPhoneAllowance(double p) { this.phoneAllowance = p; }
     public void setClothingAllowance(double c) { this.clothingAllowance = c; }

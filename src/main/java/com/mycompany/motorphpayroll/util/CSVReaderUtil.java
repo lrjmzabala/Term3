@@ -5,6 +5,9 @@ import com.mycompany.motorphpayroll.model.Attendance;
 import com.mycompany.motorphpayroll.model.User;
 import java.io.*;
 import java.util.*;
+import com.mycompany.motorphpayroll.model.Supervisor;
+import com.mycompany.motorphpayroll.model.RegularEmployee;
+
 
 public class CSVReaderUtil {
     public static final String EMPLOYEE_CSV_RESOURCE = "/employee_details.csv";
@@ -80,9 +83,11 @@ public class CSVReaderUtil {
                 if (v.length >= 19) {
                     // Logic to instantiate concrete subclasses
                     if (v[11].equalsIgnoreCase("Supervisor")) {
-                        employees.add(new Employee.Supervisor(v));
+                        // FIX: Removed "data)(v)" and changed to new Supervisor(v)
+                        employees.add(new Supervisor(v));
                     } else {
-                        employees.add(new Employee.RegularEmployee(v));
+                        // FIX: Removed "Employee." prefix
+                        employees.add(new RegularEmployee(v));
                     }
                 }
             }
