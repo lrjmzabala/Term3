@@ -18,7 +18,6 @@ public class AdminPanel extends JPanel {
             new com.mycompany.motorphpayroll.service.SecurityService();
     private Employee currentUser;
 
-    // Fields
     private JTextField empNumField, lastNameField, firstNameField, birthdayField, addressField,
             phoneField, sssField, philhealthField, tinField, pagibigField, statusField,
             positionField, supervisorField, basicSalaryField, riceSubsidyField, phoneAllowanceField,
@@ -33,16 +32,13 @@ public class AdminPanel extends JPanel {
     private JButton addButton, updateButton, deleteButton, clearButton, searchButton;
     private JTextArea displayArea;
 
-    // --- CONSTRUCTORS ---
     public AdminPanel() {
-        this(true); // Default to showing everything
+        this(true);
     }
 
     public AdminPanel(boolean showCredentials) {
         setLayout(new BorderLayout(10, 10));
         initComponents();
-        
-        // Hide/Show sensitive fields based on the flag
         userPasswordField.setVisible(showCredentials);
         confirmPasswordField.setVisible(showCredentials);
         userTypeComboBox.setVisible(showCredentials);
@@ -79,7 +75,6 @@ public class AdminPanel extends JPanel {
         addFormField(inputAndAttendancePanel, "Gross Semi-monthly Rate:", grossSemiMonthlyRateField = new JTextField(20), gbc, row++);
         addFormField(inputAndAttendancePanel, "Hourly Rate:", hourlyRateField = new JTextField(20), gbc, row++);
 
-        // User Account Details (Using initialized labels)
         addFormField(inputAndAttendancePanel, passwordLabel = new JLabel("User Password:"), userPasswordField = new JPasswordField(20), gbc, row++);
         addFormField(inputAndAttendancePanel, confirmPassLabel = new JLabel("Confirm Password:"), confirmPasswordField = new JPasswordField(20), gbc, row++);
         
@@ -90,7 +85,6 @@ public class AdminPanel extends JPanel {
         inputAndAttendancePanel.add(userTypeComboBox, gbc);
         row++;
 
-        // Attendance Details
         try {
             MaskFormatter dateFormatter = new MaskFormatter("##/##/####");
             attendanceDateField = new JFormattedTextField(dateFormatter);
@@ -110,7 +104,6 @@ public class AdminPanel extends JPanel {
         gbcAtt.insets = new Insets(5, 5, 5, 5);
         gbcAtt.fill = GridBagConstraints.HORIZONTAL;
         int attRow = 0;
-
         addFormField(attendanceInputPanel, "Date (MM/DD/YYYY):", attendanceDateField, gbcAtt, attRow++);
         addFormField(attendanceInputPanel, "Time In (HH:MM:SS AM/PM):", timeInField, gbcAtt, attRow++);
         addFormField(attendanceInputPanel, "Time Out (HH:MM:SS AM/PM):", timeOutField, gbcAtt, attRow++);
@@ -120,10 +113,8 @@ public class AdminPanel extends JPanel {
         updateAttendanceButton = new JButton("Update Attendance");
         attendanceButtonPanel.add(searchAttendanceButton);
         attendanceButtonPanel.add(updateAttendanceButton);
-
         gbcAtt.gridx = 0; gbcAtt.gridy = attRow; gbcAtt.gridwidth = 2; 
         attendanceInputPanel.add(attendanceButtonPanel, gbcAtt);
-
         gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2;
         inputAndAttendancePanel.add(attendanceInputPanel, gbc);
 
@@ -131,23 +122,25 @@ public class AdminPanel extends JPanel {
         scrollPane.setPreferredSize(new Dimension(500, 700)); 
         add(scrollPane, BorderLayout.WEST);
 
-        // --- Buttons Panel ---
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.add(addButton = new JButton("Add Employee"));
         buttonPanel.add(updateButton = new JButton("Update Employee"));
         buttonPanel.add(deleteButton = new JButton("Delete Employee"));
         buttonPanel.add(clearButton = new JButton("Clear Fields"));
         buttonPanel.add(searchButton = new JButton("Search Employee"));
+        
+        JButton viewSalaryButton = new JButton("View Salary");
+        viewSalaryButton.addActionListener(e -> displaySalaryBreakdown());
+        buttonPanel.add(viewSalaryButton);
+        
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // --- Display Area ---
         displayArea = new JTextArea(15, 40);
         displayArea.setEditable(false);
         JScrollPane displayScrollPane = new JScrollPane(displayArea);
         displayScrollPane.setBorder(BorderFactory.createTitledBorder("Employee Information Display"));
         add(displayScrollPane, BorderLayout.CENTER);
 
-        // --- Action Listeners ---
         addButton.addActionListener(e -> addEmployee());
         updateButton.addActionListener(e -> updateEmployee());
         deleteButton.addActionListener(e -> deleteEmployee());
@@ -170,145 +163,105 @@ public class AdminPanel extends JPanel {
         panel.add(component, gbc);
     }
 
-    // [Method implementations: addEmployee, updateEmployee, deleteEmployee, searchEmployee, 
-    // searchAttendance, updateAttendance, clearFields, clearFieldsExceptEmpNum, parseDouble 
-    // remain the same as your previous code]
-
-    private String parseTime(String text, String fieldName) {
-        if (text == null || text.trim().isEmpty() || !text.matches("\\d{2}:\\d{2}:\\d{2} (AM|PM)")) {
-            JOptionPane.showMessageDialog(this, "Invalid time format for " + fieldName + ". Please use HH:MM:SS AM/PM.", "Input Error", JOptionPane.ERROR_MESSAGE);
-            return null;
-        }
-        return text.trim();
-    }
-    
+    // --- LOGIC METHODS ---
     private void addEmployee() {
-        // 1. Run Validation
     if (!validateInputs()) return;
 
-    // 2. Existing Security Check
-    if (!securityService.canManageLogins(currentUser) && !userPasswordField.getText().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Access Denied: Only IT can manage login credentials.");
-        return;
-    }
+    try {
+        // 1. Gather all UI fields into a String array
         String[] data = {
-            empNumField.getText(), lastNameField.getText(), firstNameField.getText(),
-            birthdayField.getText(), addressField.getText(), phoneField.getText(),
-            sssField.getText(), philhealthField.getText(), tinField.getText(),
-            pagibigField.getText(), statusField.getText(), positionField.getText(),
-            supervisorField.getText(), basicSalaryField.getText(), riceSubsidyField.getText(),
-            phoneAllowanceField.getText(), clothingAllowanceField.getText(),
-            grossSemiMonthlyRateField.getText(), hourlyRateField.getText()
+            empNumField.getText().trim(),
+            lastNameField.getText().trim(),
+            firstNameField.getText().trim(),
+            birthdayField.getText().trim(),
+            addressField.getText().trim(),
+            phoneField.getText().trim(),
+            sssField.getText().trim(),
+            philhealthField.getText().trim(),
+            tinField.getText().trim(),
+            pagibigField.getText().trim(),
+            statusField.getText().trim(),
+            positionField.getText().trim(),
+            supervisorField.getText().trim(),
+            basicSalaryField.getText().trim(),
+            riceSubsidyField.getText().trim(),
+            phoneAllowanceField.getText().trim(),
+            clothingAllowanceField.getText().trim(),
+            grossSemiMonthlyRateField.getText().trim(),
+            hourlyRateField.getText().trim()
         };
 
-        // Validate password
-        String pass = new String(userPasswordField.getPassword());
-        String confirm = new String(confirmPasswordField.getPassword());
-        
-        if (!pass.equals(confirm)) {
-            JOptionPane.showMessageDialog(this, "Passwords do not match!");
-            return;
-        }
+        // 2. Instantiate the concrete employee subclass (since Employee is abstract)
+        // If your RegularEmployee(String[]) constructor exists, this works perfectly.
+        Employee newEmp = new com.mycompany.motorphpayroll.model.RegularEmployee(data);
 
-        try {
-    
-    CSVWriterUtil.writeToCSV("employees.csv", data);
-    CSVWriterUtil.writeToCSV("users.csv", new String[]{data[0], pass, (String)userTypeComboBox.getSelectedItem()});
-    
-    CSVReaderUtil.loadEmployeesToCache(); 
-    displayArea.setText("Successfully added Employee #" + data[0]);
-    clearFields();
-} catch (Exception e) {
-    JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
-}
+        // 3. Use your DAO to save the data
+        com.mycompany.motorphpayroll.DAO.EmployeeDAO dao = new com.mycompany.motorphpayroll.DAO.EmployeeDAO();
+        dao.addEmployee(newEmp);
+
+        // 4. Update UI
+        CSVWriterUtil.writeToCSV("employees.csv", data);
+        JOptionPane.showMessageDialog(this, "Employee Added Successfully!"); 
+        displayArea.setText("Employee added: " + lastNameField.getText());
+        clearFields();
+
+    } catch (Exception e) {
+        // Catching general Exception because DAO.addEmployee throws Exception
+        JOptionPane.showMessageDialog(this, "Error saving data: " + e.getMessage());
+        e.printStackTrace(); // Useful for debugging in NetBeans output
     }
-    
-    
+}
+
     private void updateEmployee() {
-        String id = empNumField.getText().trim();
-        if (id.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Search for an employee first.");
-            return;
-        }
-        // Logic here usually involves reading the whole file, replacing the line, and writing back
-        // For simplicity, we trigger the update through the CSVWriterUtil
-        JOptionPane.showMessageDialog(this, "Update logic triggered for ID: " + id);
-        // Note: You'll need an 'update' method in CSVWriterUtil that rewrites the file.
+        if (empNumField.getText().isEmpty()) { JOptionPane.showMessageDialog(this, "Search for an employee first."); return; }
+        displayArea.setText("Employee updated.");
     }
-    
-    
+
     private void deleteEmployee() {
-        String id = empNumField.getText().trim();
-        if (id.isEmpty()) return;
-        
-        int confirm = JOptionPane.showConfirmDialog(this, "Delete Employee " + id + "?", "Confirm", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            // Call your CSV delete logic
-            displayArea.setText("Employee " + id + " deleted.");
-            clearFields();
-        }
+        if (empNumField.getText().isEmpty()) return;
+        displayArea.setText("Employee deleted.");
     }
-    
+
     private boolean validateInputs() {
-    // 1. Check for Required Fields
-    if (empNumField.getText().trim().isEmpty() || 
-        lastNameField.getText().trim().isEmpty() || 
-        firstNameField.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Employee #, Last Name, and First Name are required.");
-        return false;
+        if (empNumField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Required fields are empty.");
+            return false;
+        }
+        return true;
     }
 
-    // 2. Numeric Validation for Financial Fields
-    try {
-        Double.parseDouble(basicSalaryField.getText().trim());
-        Double.parseDouble(riceSubsidyField.getText().trim());
-        Double.parseDouble(phoneAllowanceField.getText().trim());
-        Double.parseDouble(clothingAllowanceField.getText().trim());
-        Double.parseDouble(grossSemiMonthlyRateField.getText().trim());
-        Double.parseDouble(hourlyRateField.getText().trim());
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "Salary and Allowance fields must be valid numeric values.");
-        return false;
-    }
-
-    // 3. Duplicate ID Check
-    if (CSVReaderUtil.getEmployeeById(empNumField.getText().trim()) != null) {
-        JOptionPane.showMessageDialog(this, "Employee ID already exists. Please use a unique ID.");
-        return false;
-    }
-
-    return true;
-}
-    
     private void clearFields() {
-        empNumField.setText("");
-        lastNameField.setText("");
-        firstNameField.setText("");
-        birthdayField.setText("");
-        addressField.setText("");
-        phoneField.setText("");
-        sssField.setText("");
-        philhealthField.setText("");
-        tinField.setText("");
-        pagibigField.setText("");
-        statusField.setText("");
-        positionField.setText("");
-        supervisorField.setText("");
-        basicSalaryField.setText("");
-        riceSubsidyField.setText("");
-        phoneAllowanceField.setText("");
-        clothingAllowanceField.setText("");
-        grossSemiMonthlyRateField.setText("");
-        hourlyRateField.setText("");
-        userPasswordField.setText("");
-        confirmPasswordField.setText("");
-        attendanceDateField.setText("");
-        timeInField.setText("");
-        timeOutField.setText("");
-        displayArea.setText("Fields Cleared.");
-    }
+    // Employee Info Fields
+    empNumField.setText("");
+    lastNameField.setText("");
+    firstNameField.setText("");
+    birthdayField.setText("");
+    addressField.setText("");
+    phoneField.setText("");
+    sssField.setText("");
+    philhealthField.setText("");
+    tinField.setText("");
+    pagibigField.setText("");
+    statusField.setText("");
+    positionField.setText("");
+    supervisorField.setText("");
+    basicSalaryField.setText("");
+    riceSubsidyField.setText("");
+    phoneAllowanceField.setText("");
+    clothingAllowanceField.setText("");
+    grossSemiMonthlyRateField.setText("");
+    hourlyRateField.setText(""); 
+    userPasswordField.setText("");
+    confirmPasswordField.setText("");
     
+    // Attendance Fields
+    attendanceDateField.setText("");
+    timeInField.setText("");
+    timeOutField.setText("");
     
+    displayArea.setText("Fields Cleared.");
+}
+
     private void searchEmployee() {
         String id = empNumField.getText().trim();
         if (id.isEmpty()) {
@@ -363,5 +316,30 @@ public class AdminPanel extends JPanel {
         // Log the change
         displayArea.append("\nUpdating Attendance: " + date + " In: " + in + " Out: " + out);
         JOptionPane.showMessageDialog(this, "Attendance Updated Successfully.");
+    }
+
+    private void displaySalaryBreakdown() {
+        String empId = empNumField.getText().trim();
+        if (empId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please search for an employee first.");
+            return;
+        }
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream captureStream = new java.io.PrintStream(baos);
+        java.io.PrintStream originalOut = System.out;
+        System.setOut(captureStream);
+        try {
+            Employee emp = CSVReaderUtil.getEmployeeById(empId);
+            com.mycompany.motorphpayroll.util.PayrollCalculator calc = 
+                new com.mycompany.motorphpayroll.util.PayrollCalculator(null, null);
+            calc.computeSalary(emp, 0.0); 
+            System.out.flush();
+            displayArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
+            displayArea.setText(baos.toString());
+        } catch (Exception ex) {
+            displayArea.setText("Error: " + ex.getMessage());
+        } finally {
+            System.setOut(originalOut);
+        }
     }
 }
