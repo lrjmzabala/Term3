@@ -53,4 +53,16 @@ public class EmployeeDAO {
             String.valueOf(e.getGrossSemiMonthlyRate()), String.valueOf(e.getHourlyRate())
         };
     }
+    
+    public void deleteEmployeeById(String employeeId) throws IOException {
+    // 1. Get all employees from the CSV
+    List<Employee> allEmployees = CSVReaderUtil.getAllEmployeesList();
+    
+    // 2. Remove the one that matches the ID
+    allEmployees.removeIf(e -> e.getEmployeeNumber().equals(employeeId));
+    
+    // 3. Write the whole list back to the CSV
+    CSVWriterUtil.rewriteCSV("employee_details.csv", allEmployees);
+}
+   
 }

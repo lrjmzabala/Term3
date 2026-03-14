@@ -4,6 +4,10 @@ import com.mycompany.motorphpayroll.model.Employee;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import com.mycompany.motorphpayroll.model.Employee;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
 
 public class CSVWriterUtil {
 
@@ -46,6 +50,33 @@ public class CSVWriterUtil {
             
     } catch (IOException e) {
         System.err.println("❌ Error: " + e.getMessage());
+    }
+}
+    
+    public static void rewriteCSV(String filename, List<Employee> employees) throws IOException {
+    try (PrintWriter writer = new PrintWriter(new FileWriter(filename, false))) {
+        for (Employee e : employees) {
+            String[] data = {
+                e.getEmployeeNumber(), e.getLastName(), e.getFirstName(), e.getBirthday(),
+                e.getAddress(), e.getPhoneNumber(), e.getSssNumber(), e.getPhilhealthNumber(),
+                e.getTinNumber(), e.getPagibigNumber(), e.getStatus(), e.getPosition(),
+                e.getSupervisor(), 
+                String.valueOf(e.getBasicSalary()),     // Must use String.valueOf
+                String.valueOf(e.getRiceSubsidy()),     // Must use String.valueOf
+                String.valueOf(e.getPhoneAllowance()),  // Must use String.valueOf
+                String.valueOf(e.getClothingAllowance()),// Must use String.valueOf
+                String.valueOf(e.getGrossSemiMonthlyRate()), 
+                String.valueOf(e.getHourlyRate())
+            };
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < data.length; i++) {
+                String field = (data[i] == null) ? "" : data[i].replace("\"", "\"\"");
+                sb.append("\"").append(field).append("\"");
+                if (i < data.length - 1) sb.append(",");
+            }
+            writer.println(sb.toString());
+        }
     }
 }
     
