@@ -1,9 +1,6 @@
 package com.mycompany.motorphpayroll.DAO;
 
-import com.mycompany.motorphpayroll.model.Employee;
-import com.mycompany.motorphpayroll.model.Supervisor;
-import com.mycompany.motorphpayroll.model.RegularEmployee;
-import com.mycompany.motorphpayroll.model.Admin; // Add this import
+import com.mycompany.motorphpayroll.model.*;
 import com.mycompany.motorphpayroll.util.CSVReaderUtil;
 import java.util.List;
 import java.util.Map;
@@ -12,21 +9,18 @@ public class EmployeeDAO {
 
     // 1. The Factory Method: Creates the specific subclass based on position
     public Employee getEmployeeById(String employeeId) {
-        // Ensure this method name matches what is in your CSVReaderUtil
-        String[] data = CSVReaderUtil.getRawDataById(employeeId); 
-        if (data == null) return null;
+    String[] data = CSVReaderUtil.getRawDataById(employeeId); 
+    if (data == null) return null;
 
-        String position = data[11]; // Assuming index 11 is 'Position'
+    String pos = data[11];
 
-        // Instantiate based on role
-        if ("HR Manager".equalsIgnoreCase(position)) {
-            return new Admin(data);
-        } else if ("Supervisor".equalsIgnoreCase(position)) {
-            return new Supervisor(data);
-        } else {
-            return new RegularEmployee(data);
-        }
-    }
+    if ("HR Manager".equalsIgnoreCase(pos)) return new Admin(data);
+    if ("Supervisor".equalsIgnoreCase(pos)) return new Supervisor(data);
+    if ("IT".equalsIgnoreCase(pos)) return new IT(data);
+    if ("Finance".equalsIgnoreCase(pos)) return new Finance(data);
+    
+    return new RegularEmployee(data); // Default
+}
 
     public List<Employee> getAllEmployeesList() {
         return CSVReaderUtil.getAllEmployeesList();

@@ -39,13 +39,16 @@ public class mainframe extends JFrame {
             // POLYMORPHIC CHECKS
             // The system now asks the object itself: "Can you access this?"
             if (loggedInUser.canAccessModule("Admin")) {
-            tabbedPane.addTab("Admin Panel", new AdminPanel());
-            tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
+    tabbedPane.addTab("Admin Panel", new AdminPanel());
+    tabbedPane.addTab("View All Employees", new ViewEmployeesPanel());
 }
 
-if (loggedInUser.canAccessModule("Leave")) {
-    // Note: ensure loggedInUser is actually a Supervisor type here
-    tabbedPane.addTab("Supervisor Portal", new SupervisorPanel(loggedInUser, allEmployees));
+if (loggedInUser.canAccessModule("IT")) {
+    tabbedPane.addTab("IT Portal", new ITPanel()); // IT sees AdminPanel (hidden creds)
+}
+
+if (loggedInUser.canAccessModule("Finance")) {
+    tabbedPane.addTab("Finance Portal", new FinancePanel()); // Finance sees AdminPanel (hidden creds)
 }
 
             // UPDATED: Supervisor check passes the required data to the constructor

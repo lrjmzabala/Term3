@@ -18,32 +18,40 @@ public class AdminPanel extends JPanel {
             new com.mycompany.motorphpayroll.service.SecurityService();
     private Employee currentUser;
 
-    // Employee Details Fields
+    // Fields
     private JTextField empNumField, lastNameField, firstNameField, birthdayField, addressField,
             phoneField, sssField, philhealthField, tinField, pagibigField, statusField,
             positionField, supervisorField, basicSalaryField, riceSubsidyField, phoneAllowanceField,
             clothingAllowanceField, grossSemiMonthlyRateField, hourlyRateField;
 
-    // User Credentials Fields
-    private JPasswordField userPasswordField;
-    private JPasswordField confirmPasswordField;
+    private JPasswordField userPasswordField, confirmPasswordField;
     private JComboBox<String> userTypeComboBox;
+    private JLabel passwordLabel, confirmPassLabel, userTypeLabel;
 
-    // Attendance Fields
-    private JFormattedTextField attendanceDateField;
-    private JFormattedTextField timeInField;
-    private JFormattedTextField timeOutField;
-    private JButton searchAttendanceButton;
-    private JButton updateAttendanceButton;
-
+    private JFormattedTextField attendanceDateField, timeInField, timeOutField;
+    private JButton searchAttendanceButton, updateAttendanceButton;
     private JButton addButton, updateButton, deleteButton, clearButton, searchButton;
-
     private JTextArea displayArea;
 
+    // --- CONSTRUCTORS ---
     public AdminPanel() {
-        setLayout(new BorderLayout(10, 10));
+        this(true); // Default to showing everything
+    }
 
-        // --- Input Panel for Employee Details and Attendance ---
+    public AdminPanel(boolean showCredentials) {
+        setLayout(new BorderLayout(10, 10));
+        initComponents();
+        
+        // Hide/Show sensitive fields based on the flag
+        userPasswordField.setVisible(showCredentials);
+        confirmPasswordField.setVisible(showCredentials);
+        userTypeComboBox.setVisible(showCredentials);
+        passwordLabel.setVisible(showCredentials);
+        confirmPassLabel.setVisible(showCredentials);
+        userTypeLabel.setVisible(showCredentials);
+    }
+
+    private void initComponents() {
         JPanel inputAndAttendancePanel = new JPanel(new GridBagLayout());
         inputAndAttendancePanel.setBorder(BorderFactory.createTitledBorder("Employee Details and Attendance"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -51,8 +59,6 @@ public class AdminPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         int row = 0;
-
-        // Helper method to add a label and text field
         addFormField(inputAndAttendancePanel, "Employee #:", empNumField = new JTextField(20), gbc, row++);
         addFormField(inputAndAttendancePanel, "Last Name:", lastNameField = new JTextField(20), gbc, row++);
         addFormField(inputAndAttendancePanel, "First Name:", firstNameField = new JTextField(20), gbc, row++);
@@ -73,13 +79,12 @@ public class AdminPanel extends JPanel {
         addFormField(inputAndAttendancePanel, "Gross Semi-monthly Rate:", grossSemiMonthlyRateField = new JTextField(20), gbc, row++);
         addFormField(inputAndAttendancePanel, "Hourly Rate:", hourlyRateField = new JTextField(20), gbc, row++);
 
-        // User Account Details
-        addFormField(inputAndAttendancePanel, "User Password:", userPasswordField = new JPasswordField(20), gbc, row++);
-        addFormField(inputAndAttendancePanel, "Confirm Password:", confirmPasswordField = new JPasswordField(20), gbc, row++);
+        // User Account Details (Using initialized labels)
+        addFormField(inputAndAttendancePanel, passwordLabel = new JLabel("User Password:"), userPasswordField = new JPasswordField(20), gbc, row++);
+        addFormField(inputAndAttendancePanel, confirmPassLabel = new JLabel("Confirm Password:"), confirmPasswordField = new JPasswordField(20), gbc, row++);
         
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        inputAndAttendancePanel.add(new JLabel("User Type:"), gbc);
+        gbc.gridx = 0; gbc.gridy = row;
+        inputAndAttendancePanel.add(userTypeLabel = new JLabel("User Type:"), gbc);
         gbc.gridx = 1;
         userTypeComboBox = new JComboBox<>(new String[]{"Employee", "Admin"});
         inputAndAttendancePanel.add(userTypeComboBox, gbc);
@@ -93,7 +98,6 @@ public class AdminPanel extends JPanel {
             timeInField = new JFormattedTextField(timeFormatter);
             timeOutField = new JFormattedTextField(timeFormatter);
         } catch (ParseException e) {
-            e.printStackTrace();
             attendanceDateField = new JFormattedTextField();
             timeInField = new JFormattedTextField();
             timeOutField = new JFormattedTextField();
@@ -117,14 +121,10 @@ public class AdminPanel extends JPanel {
         attendanceButtonPanel.add(searchAttendanceButton);
         attendanceButtonPanel.add(updateAttendanceButton);
 
-        gbcAtt.gridx = 0;
-        gbcAtt.gridy = attRow;
-        gbcAtt.gridwidth = 2; 
+        gbcAtt.gridx = 0; gbcAtt.gridy = attRow; gbcAtt.gridwidth = 2; 
         attendanceInputPanel.add(attendanceButtonPanel, gbcAtt);
 
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2;
         inputAndAttendancePanel.add(attendanceInputPanel, gbc);
 
         JScrollPane scrollPane = new JScrollPane(inputAndAttendancePanel);
@@ -133,17 +133,11 @@ public class AdminPanel extends JPanel {
 
         // --- Buttons Panel ---
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        addButton = new JButton("Add Employee");
-        updateButton = new JButton("Update Employee");
-        deleteButton = new JButton("Delete Employee");
-        clearButton = new JButton("Clear Fields");
-        searchButton = new JButton("Search Employee");
-
-        buttonPanel.add(addButton);
-        buttonPanel.add(updateButton);
-        buttonPanel.add(deleteButton);
-        buttonPanel.add(clearButton);
-        buttonPanel.add(searchButton);
+        buttonPanel.add(addButton = new JButton("Add Employee"));
+        buttonPanel.add(updateButton = new JButton("Update Employee"));
+        buttonPanel.add(deleteButton = new JButton("Delete Employee"));
+        buttonPanel.add(clearButton = new JButton("Clear Fields"));
+        buttonPanel.add(searchButton = new JButton("Search Employee"));
         add(buttonPanel, BorderLayout.SOUTH);
 
         // --- Display Area ---
@@ -166,9 +160,12 @@ public class AdminPanel extends JPanel {
     }
 
     private void addFormField(JPanel panel, String labelText, JComponent component, GridBagConstraints gbc, int row) {
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        panel.add(new JLabel(labelText), gbc);
+        addFormField(panel, new JLabel(labelText), component, gbc, row);
+    }
+
+    private void addFormField(JPanel panel, JLabel label, JComponent component, GridBagConstraints gbc, int row) {
+        gbc.gridx = 0; gbc.gridy = row;
+        panel.add(label, gbc);
         gbc.gridx = 1;
         panel.add(component, gbc);
     }
@@ -214,7 +211,7 @@ public class AdminPanel extends JPanel {
         }
 
         try {
-    // These are the lines that were failing
+    
     CSVWriterUtil.writeToCSV("employees.csv", data);
     CSVWriterUtil.writeToCSV("users.csv", new String[]{data[0], pass, (String)userTypeComboBox.getSelectedItem()});
     
